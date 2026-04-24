@@ -487,6 +487,7 @@
     <div class="toolbar" role="toolbar" aria-label="Document actions">
         <a href="index.html" class="back" title="Back to Hub">&larr; Hub</a>
         <button type="button" class="btn ghost" id="reset-btn" title="Clear all fields">Reset</button>
+        <button type="button" class="btn ghost" id="share-btn" title="Share (save to Drive, email, etc.)">Share</button>
         <button type="button" class="btn" id="save-pdf-btn" title="Save as PDF">Save as PDF</button>
     </div>
 
@@ -1067,57 +1068,71 @@
         return `${datePart}-${teacher}-${evaluator}.pdf`;
     }
 
+    // Validates libraries + required name fields. Returns true if ready.
+    function validateReady() {
+        const teacher = document.getElementById('teacher-name').value.trim();
+        const evaluator = document.getElementById('evaluator-name').value.trim();
+        if (!teacher || !evaluator) {
+            showToast('Please enter Teacher and Evaluator names first.');
+            return false;
+        }
+        if (typeof window.html2canvas !== 'function') {
+            showToast('PDF library (html2canvas) failed to load. Check your connection and try again.');
+            console.error('window.html2canvas is not a function');
+            return false;
+        }
+        if (!window.jspdf || typeof window.jspdf.jsPDF !== 'function') {
+            showToast('PDF library (jsPDF) failed to load. Check your connection and try again.');
+            console.error('window.jspdf.jsPDF is not available');
+            return false;
+        }
+        return true;
+    }
+
+    // Builds a jsPDF document from the visible .page elements. Shared by
+    // Save as PDF and Share flows. Returns { pdf, filename } or null if
+    // the document could not be built.
+    async function generatePDF() {
+        const filename = buildFilename();
+        const pages = Array.from(document.querySelectorAll('.page'));
+        if (!pages.length) { showToast('Nothing to export.'); return null; }
+
+        if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+        const pageWmm = 210;
+        const pageHmm = 297;
+
+        for (let i = 0; i < pages.length; i++) {
+            const canvas = await window.html2canvas(pages[i], {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                windowWidth: pages[i].offsetWidth,
+                windowHeight: pages[i].offsetHeight
+            });
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            if (i > 0) pdf.addPage('a4', 'portrait');
+            pdf.addImage(imgData, 'JPEG', 0, 0, pageWmm, pageHmm, undefined, 'FAST');
+        }
+
+        return { pdf, filename };
+    }
+
     async function saveAsPDF() {
         const btn = document.getElementById('save-pdf-btn');
         try {
-            const teacher = document.getElementById('teacher-name').value.trim();
-            const evaluator = document.getElementById('evaluator-name').value.trim();
-            if (!teacher || !evaluator) {
-                showToast('Please enter Teacher and Evaluator names first.');
-                return;
-            }
-
-            if (typeof window.html2canvas !== 'function') {
-                showToast('PDF library (html2canvas) failed to load. Check your connection and try again.');
-                console.error('window.html2canvas is not a function');
-                return;
-            }
-            if (!window.jspdf || typeof window.jspdf.jsPDF !== 'function') {
-                showToast('PDF library (jsPDF) failed to load. Check your connection and try again.');
-                console.error('window.jspdf.jsPDF is not available');
-                return;
-            }
-
-            const filename = buildFilename();
-            const pages = Array.from(document.querySelectorAll('.page'));
-            if (!pages.length) { showToast('Nothing to export.'); return; }
-
-            if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-
+            if (!validateReady()) return;
             if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
             showToast('Generating PDF...');
 
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-            const pageWmm = 210;
-            const pageHmm = 297;
+            const result = await generatePDF();
+            if (!result) return;
 
-            for (let i = 0; i < pages.length; i++) {
-                const canvas = await window.html2canvas(pages[i], {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    windowWidth: pages[i].offsetWidth,
-                    windowHeight: pages[i].offsetHeight
-                });
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                if (i > 0) pdf.addPage('a4', 'portrait');
-                pdf.addImage(imgData, 'JPEG', 0, 0, pageWmm, pageHmm, undefined, 'FAST');
-            }
-
-            pdf.save(filename);
-            showToast(`Saved: ${filename}`);
+            result.pdf.save(result.filename);
+            showToast(`Saved: ${result.filename}`);
         } catch (err) {
             console.error('PDF export error:', err);
             showToast('PDF export failed: ' + (err && err.message ? err.message : 'unknown error'));
@@ -1126,11 +1141,60 @@
         }
     }
 
+    // Uses the Web Share API when the browser supports sharing files
+    // (mobile Safari / Chrome / Android, and some desktop Chrome). The OS
+    // share sheet includes Drive, Gmail, Files, etc. On browsers that do
+    // not support file sharing, falls back to a standard download.
+    async function sharePDF() {
+        const btn = document.getElementById('share-btn');
+        try {
+            if (!validateReady()) return;
+            if (btn) { btn.disabled = true; btn.textContent = 'Preparing...'; }
+            showToast('Preparing file...');
+
+            const result = await generatePDF();
+            if (!result) return;
+
+            const blob = result.pdf.output('blob');
+            const file = new File([blob], result.filename, { type: 'application/pdf' });
+
+            // Preferred path: native share sheet with file attachment
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'AISA Teacher Evaluation',
+                        text: result.filename
+                    });
+                    showToast('Shared.');
+                    return;
+                } catch (shareErr) {
+                    // User cancelled — no need to surface an error
+                    if (shareErr && shareErr.name === 'AbortError') {
+                        showToast('Share cancelled.');
+                        return;
+                    }
+                    console.warn('Web Share failed, falling back to download:', shareErr);
+                }
+            }
+
+            // Fallback: trigger a normal download
+            result.pdf.save(result.filename);
+            showToast('Sharing not supported here — downloaded instead.');
+        } catch (err) {
+            console.error('Share error:', err);
+            showToast('Share failed: ' + (err && err.message ? err.message : 'unknown error'));
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = 'Share'; }
+        }
+    }
+
     /* ============ INIT ============ */
     document.addEventListener('DOMContentLoaded', () => {
         buildDocument();
         wireRatingCells();
         document.getElementById('save-pdf-btn').addEventListener('click', saveAsPDF);
+        document.getElementById('share-btn').addEventListener('click', sharePDF);
         document.getElementById('reset-btn').addEventListener('click', resetForm);
     });
     </script>
