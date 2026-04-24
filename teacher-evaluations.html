@@ -468,136 +468,277 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ===== PDF / PRINT RENDER MODE =====
-           Applied via .pdf-mode class when generating PDF. Converts the
-           glassy dark UI into a clean, printable light layout. */
-        .pdf-mode {
-            background: #ffffff !important;
-            color: #111827 !important;
-            padding: 0 !important;
-            animation: none !important;
-            min-height: auto !important;
-            display: block !important;
-            overflow: visible !important;
+        /* ===== PDF PRINTABLE CONTAINER =====
+           Rendered offscreen and used as the source for html2pdf.
+           All styles scoped under #pdf-printable so they can't be
+           affected by or affect the live page. */
+        #pdf-printable {
+            position: fixed;
+            top: 0;
+            left: -10000px;
+            width: 760px;
+            background: #ffffff;
+            color: #111827;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            padding: 24px;
+            box-sizing: border-box;
+            animation: none;
         }
-        .pdf-mode .page-container {
-            max-width: 760px !important;
-            width: 760px !important;
-            padding: 0 !important;
-            margin: 0 auto !important;
+        #pdf-printable *,
+        #pdf-printable *::before,
+        #pdf-printable *::after {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            color: inherit;
+            margin: 0;
+            padding: 0;
         }
-        .pdf-mode .logo-left,
-        .pdf-mode .logo-right,
-        .pdf-mode .back-link,
-        .pdf-mode .actions,
-        .pdf-mode .comment-dropdown-wrap { display: none !important; }
 
-        .pdf-mode .page-header { margin-bottom: 12px !important; }
-        .pdf-mode .page-title {
-            -webkit-text-fill-color: #002147 !important;
-            background: none !important;
-            color: #002147 !important;
-            font-size: 1.9rem !important;
+        #pdf-printable .pdf-header {
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #002147;
+            margin-bottom: 14px;
         }
-        .pdf-mode .school-name { color: #002147 !important; font-size: 0.75rem !important; }
-        .pdf-mode .page-subtitle { color: #374151 !important; font-size: 0.85rem !important; }
-        .pdf-mode .info-card,
-        .pdf-mode .domain {
-            background: #ffffff !important;
-            border: 1px solid #d1d5db !important;
-            color: #111827 !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-            padding: 14px !important;
-            margin-bottom: 12px !important;
-            border-radius: 8px !important;
+        #pdf-printable .pdf-school {
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #002147;
+            font-weight: 600;
         }
-        .pdf-mode .domain-header {
-            border-bottom-color: #e5e7eb !important;
-            padding-bottom: 8px !important;
-            margin-bottom: 4px !important;
+        #pdf-printable .pdf-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #002147;
+            margin: 4px 0 3px;
         }
-        .pdf-mode .domain-title { color: #002147 !important; font-size: 1.1rem !important; }
-        .pdf-mode .domain-guide { color: #374151 !important; font-size: 0.78rem !important; }
-        .pdf-mode .domain-number {
-            background: #FFC72C !important;
-            color: #002147 !important;
-            border-color: #e0b020 !important;
-            width: 34px !important;
-            height: 34px !important;
-            font-size: 0.95rem !important;
+        #pdf-printable .pdf-sub {
+            font-size: 10px;
+            color: #374151;
         }
-        .pdf-mode .field label { color: #002147 !important; font-size: 0.7rem !important; }
-        .pdf-mode .field input,
-        .pdf-mode .field textarea,
-        .pdf-mode .field select {
-            background: #ffffff !important;
-            border: 1px solid #d1d5db !important;
-            color: #111827 !important;
-            font-size: 0.82rem !important;
-            padding: 6px 8px !important;
-        }
-        .pdf-mode .field textarea { min-height: 40px !important; }
 
-        .pdf-mode .criterion {
-            padding: 10px 0 !important;
+        #pdf-printable .pdf-info {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 14px;
+            background: #f9fafb;
+        }
+        #pdf-printable .pdf-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        #pdf-printable .pdf-info-grid.two {
+            grid-template-columns: 2fr 1fr;
+            margin-top: 8px;
+        }
+        #pdf-printable .pdf-info-cell .pdf-label {
+            font-size: 8.5px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #002147;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+        }
+        #pdf-printable .pdf-info-cell .pdf-value {
+            font-size: 12px;
+            color: #111827;
+        }
+
+        #pdf-printable .pdf-domain {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+        }
+        #pdf-printable .pdf-domain-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        #pdf-printable .pdf-dom-num {
+            width: 22px;
+            height: 22px;
+            background: #FFC72C;
+            color: #002147;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        #pdf-printable .pdf-dom-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #002147;
+        }
+        #pdf-printable .pdf-dom-guide {
+            font-size: 10px;
+            color: #374151;
+            font-style: italic;
+            margin-bottom: 6px;
+        }
+
+        #pdf-printable .pdf-crit {
+            padding: 6px 0;
+            border-top: 1px dashed #e5e7eb;
             page-break-inside: avoid;
             break-inside: avoid;
         }
-        .pdf-mode .criterion-head { margin-bottom: 6px !important; }
-        .pdf-mode .criterion-name { color: #002147 !important; font-size: 0.95rem !important; }
-        .pdf-mode .criterion-tag { background: #f3f4f6 !important; color: #374151 !important; border-color: #e5e7eb !important; font-size: 0.65rem !important; }
-
-        /* Rating row: keep only the selected rating in the PDF to save space */
-        .pdf-mode .rating-row {
-            display: block !important;
-            margin-bottom: 6px !important;
+        #pdf-printable .pdf-crit:first-of-type {
+            border-top: none;
         }
-        .pdf-mode .rating-option { display: none !important; }
-        .pdf-mode .rating-option.is-selected { display: block !important; }
-        .pdf-mode .rating-option.is-selected label {
-            background: #fff7db !important;
-            border: 1px solid #FFC72C !important;
-            color: #111827 !important;
-            padding: 8px 10px !important;
-            box-shadow: none !important;
-            border-radius: 6px !important;
-            font-size: 0.8rem !important;
+        #pdf-printable .pdf-crit-head {
+            font-size: 12px;
+            font-weight: 700;
+            color: #002147;
+            margin-bottom: 4px;
         }
-        .pdf-mode .rating-option .rating-badge { font-size: 0.75rem !important; margin-bottom: 3px !important; }
-        .pdf-mode .rating-option .rating-desc { font-size: 0.75rem !important; color: #4b5563 !important; line-height: 1.35 !important; }
+        #pdf-printable .pdf-crit-tag {
+            font-size: 9px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            padding: 1px 5px;
+            border-radius: 8px;
+            color: #374151;
+            font-weight: 500;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
 
-        /* Unrated criterion: show a compact placeholder */
-        .pdf-mode .rating-row.no-rating::before {
-            content: "Not rated";
+        #pdf-printable .pdf-rating {
+            border-left: 3px solid #FFC72C;
+            background: #fff7db;
+            padding: 5px 8px;
+            border-radius: 3px;
+        }
+        #pdf-printable .pdf-rating .pdf-rbadge {
+            color: #002147;
+            font-size: 11px;
+            display: block;
+            margin-bottom: 2px;
+            font-weight: 700;
+        }
+        #pdf-printable .pdf-rating .pdf-rdesc {
+            font-size: 10px;
+            color: #374151;
+            line-height: 1.4;
+        }
+        #pdf-printable .pdf-r4 { border-left-color: #16a34a; background: #ecfdf5; }
+        #pdf-printable .pdf-r3 { border-left-color: #2563eb; background: #eff6ff; }
+        #pdf-printable .pdf-r2 { border-left-color: #f59e0b; background: #fffbeb; }
+        #pdf-printable .pdf-r1 { border-left-color: #dc2626; background: #fef2f2; }
+
+        #pdf-printable .pdf-unrated {
             display: inline-block;
-            padding: 4px 10px;
+            padding: 3px 8px;
             background: #f3f4f6;
             border: 1px dashed #d1d5db;
-            border-radius: 6px;
             color: #6b7280;
-            font-size: 0.75rem;
+            font-size: 10px;
+            border-radius: 4px;
         }
 
-        .pdf-mode .reflective-prompts {
-            background: #f9fafb !important;
-            color: #374151 !important;
-            border-left-color: #FFC72C !important;
-            padding: 6px 10px !important;
-            font-size: 0.72rem !important;
+        #pdf-printable .pdf-comment {
+            margin-top: 5px;
+            font-size: 10.5px;
+            color: #111827;
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            padding: 5px 7px;
+            border-radius: 3px;
+            line-height: 1.4;
         }
-        .pdf-mode .reflective-prompts strong { font-size: 0.65rem !important; margin-bottom: 2px !important; }
-        .pdf-mode .reflective-prompts li { font-size: 0.72rem !important; line-height: 1.3 !important; }
+        #pdf-printable .pdf-comment .pdf-label {
+            color: #002147;
+            font-size: 8.5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+        }
 
-        .pdf-mode .comment-block {
-            grid-template-columns: 1fr !important;
-            margin-top: 6px !important;
-            gap: 4px !important;
+        #pdf-printable .pdf-summary {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 14px;
+            background: #f9fafb;
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
-        .pdf-mode .info-grid,
-        .pdf-mode .info-grid.two-col {
-            grid-template-columns: 1fr 1fr !important;
-            gap: 10px !important;
+        #pdf-printable .pdf-summary h2 {
+            font-size: 14px;
+            color: #002147;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        #pdf-printable .pdf-sum-row {
+            margin-bottom: 6px;
+            font-size: 11px;
+            color: #111827;
+            line-height: 1.45;
+        }
+        #pdf-printable .pdf-sum-row .pdf-label {
+            color: #002147;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        #pdf-printable .pdf-sigs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 24px;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        #pdf-printable .pdf-sig-line {
+            border-bottom: 1px solid #002147;
+            height: 22px;
+            margin-bottom: 4px;
+        }
+        #pdf-printable .pdf-sig-label {
+            font-size: 10px;
+            color: #374151;
+        }
+
+        #pdf-printable .pdf-reflective {
+            margin-top: 4px;
+            background: #fff;
+            border-left: 2px solid #FFC72C;
+            padding: 4px 8px;
+            font-size: 9.5px;
+            color: #4b5563;
+            line-height: 1.35;
+        }
+        #pdf-printable .pdf-reflective .pdf-label {
+            color: #002147;
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 1px;
+        }
+        #pdf-printable .pdf-reflective ul {
+            list-style: disc;
+            padding-left: 14px;
         }
 
         /* Responsive */
@@ -1394,26 +1535,137 @@
             return `${datePart}-${teacher}-${evaluator}.pdf`;
         }
 
-        /* ---------- Tag selected ratings for PDF render ---------- */
-        function tagSelectedRatings() {
-            // Remove existing flags
-            document.querySelectorAll('.rating-option.is-selected').forEach(el => el.classList.remove('is-selected'));
-            document.querySelectorAll('.rating-row.no-rating').forEach(el => el.classList.remove('no-rating'));
+        /* ---------- HTML escape ---------- */
+        function esc(str) {
+            const d = document.createElement('div');
+            d.textContent = str == null ? '' : String(str);
+            return d.innerHTML;
+        }
 
-            document.querySelectorAll('.rating-row').forEach(row => {
-                const checked = row.querySelector('input[type="radio"]:checked');
-                if (checked) {
-                    const option = checked.closest('.rating-option');
-                    if (option) option.classList.add('is-selected');
-                } else {
-                    row.classList.add('no-rating');
-                }
+        /* ---------- Format display date (YYYY-MM-DD -> long form) ---------- */
+        function formatDisplayDate(iso) {
+            if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso || '';
+            const d = new Date(iso + 'T00:00:00');
+            if (isNaN(d)) return iso;
+            return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        /* ---------- Build a clean printable DOM from the form state ---------- */
+        function buildPrintable() {
+            const teacher  = document.getElementById('teacher-name').value.trim();
+            const evaluator= document.getElementById('evaluator-name').value.trim();
+            const date     = document.getElementById('eval-date').value;
+            const grade    = document.getElementById('grade-level').value.trim();
+            const evalType = document.getElementById('eval-type').value;
+
+            let html = '';
+
+            // ----- Header -----
+            html += `
+                <div class="pdf-header">
+                    <div class="pdf-school">American International School in Abu Dhabi</div>
+                    <div class="pdf-title">Teacher Evaluation</div>
+                    <div class="pdf-sub">AISA Supervision &amp; Evaluation Program &mdash; 2025-26</div>
+                </div>`;
+
+            // ----- Info card -----
+            html += `
+                <div class="pdf-info">
+                    <div class="pdf-info-grid">
+                        <div class="pdf-info-cell"><span class="pdf-label">Teacher</span><div class="pdf-value">${esc(teacher) || '&mdash;'}</div></div>
+                        <div class="pdf-info-cell"><span class="pdf-label">Evaluator</span><div class="pdf-value">${esc(evaluator) || '&mdash;'}</div></div>
+                        <div class="pdf-info-cell"><span class="pdf-label">Date</span><div class="pdf-value">${esc(formatDisplayDate(date)) || '&mdash;'}</div></div>
+                    </div>
+                    <div class="pdf-info-grid two">
+                        <div class="pdf-info-cell"><span class="pdf-label">Grade Level / Subject</span><div class="pdf-value">${esc(grade) || '&mdash;'}</div></div>
+                        <div class="pdf-info-cell"><span class="pdf-label">Evaluation Type</span><div class="pdf-value">${esc(evalType) || '&mdash;'}</div></div>
+                    </div>
+                </div>`;
+
+            // ----- Domains -----
+            document.querySelectorAll('section.domain').forEach(domain => {
+                const num    = domain.querySelector('.domain-number')?.textContent.trim() || '';
+                const title  = domain.querySelector('.domain-title')?.textContent.trim() || '';
+                const guide  = domain.querySelector('.domain-guide')?.textContent.trim() || '';
+
+                html += `<div class="pdf-domain">
+                    <div class="pdf-domain-head">
+                        <span class="pdf-dom-num">${esc(num)}</span>
+                        <span class="pdf-dom-title">${esc(title)}</span>
+                    </div>`;
+                if (guide) html += `<div class="pdf-dom-guide">${esc(guide)}</div>`;
+
+                domain.querySelectorAll('.criterion').forEach(crit => {
+                    const name    = crit.querySelector('.criterion-name')?.textContent.trim() || '';
+                    const tag     = crit.querySelector('.criterion-tag')?.textContent.trim() || '';
+                    const checked = crit.querySelector('input[type="radio"]:checked');
+                    const commentEl = crit.querySelector('textarea[data-comment]');
+                    const comment = commentEl ? commentEl.value.trim() : '';
+
+                    // Rating block
+                    let ratingBlock = `<span class="pdf-unrated">Not rated</span>`;
+                    if (checked) {
+                        const opt   = checked.closest('.rating-option');
+                        const level = opt.dataset.level;
+                        const badge = opt.querySelector('.rating-badge')?.textContent.trim() || '';
+                        const desc  = opt.querySelector('.rating-desc')?.textContent.trim() || '';
+                        ratingBlock = `<div class="pdf-rating pdf-r${esc(level)}">
+                            <span class="pdf-rbadge">${esc(badge)}</span>
+                            <div class="pdf-rdesc">${esc(desc)}</div>
+                        </div>`;
+                    }
+
+                    html += `<div class="pdf-crit">
+                        <div class="pdf-crit-head">${esc(name)}${tag ? ` <span class="pdf-crit-tag">${esc(tag)}</span>` : ''}</div>
+                        ${ratingBlock}`;
+
+                    if (comment) {
+                        html += `<div class="pdf-comment"><span class="pdf-label">Comments</span>${esc(comment)}</div>`;
+                    }
+
+                    html += `</div>`;
+                });
+
+                html += `</div>`;
             });
+
+            // ----- Summary -----
+            const strengths = document.getElementById('strengths').value.trim();
+            const growth    = document.getElementById('growth-areas').value.trim();
+            const followup  = document.getElementById('followup').value.trim();
+            const overall   = document.getElementById('overall-rating').value;
+
+            if (strengths || growth || followup || overall) {
+                html += `<div class="pdf-summary">
+                    <h2>Overall Summary</h2>`;
+                if (overall)   html += `<div class="pdf-sum-row"><span class="pdf-label">Overall Rating</span>${esc(overall)}</div>`;
+                if (strengths) html += `<div class="pdf-sum-row"><span class="pdf-label">Key Strengths</span>${esc(strengths)}</div>`;
+                if (growth)    html += `<div class="pdf-sum-row"><span class="pdf-label">Areas for Growth</span>${esc(growth)}</div>`;
+                if (followup)  html += `<div class="pdf-sum-row"><span class="pdf-label">Follow-Up / Support Plan</span>${esc(followup)}</div>`;
+                html += `</div>`;
+            }
+
+            // ----- Signatures -----
+            html += `<div class="pdf-sigs">
+                <div>
+                    <div class="pdf-sig-line"></div>
+                    <div class="pdf-sig-label">Teacher Signature &amp; Date</div>
+                </div>
+                <div>
+                    <div class="pdf-sig-line"></div>
+                    <div class="pdf-sig-label">Evaluator Signature &amp; Date</div>
+                </div>
+            </div>`;
+
+            const container = document.createElement('div');
+            container.id = 'pdf-printable';
+            container.innerHTML = html;
+            return container;
         }
 
         /* ---------- PDF export ---------- */
         function saveAsPDF() {
-            const teacher = document.getElementById('teacher-name').value.trim();
+            const teacher   = document.getElementById('teacher-name').value.trim();
             const evaluator = document.getElementById('evaluator-name').value.trim();
             if (!teacher || !evaluator) {
                 showToast('Please enter Teacher and Evaluator names first.', 'info');
@@ -1421,39 +1673,31 @@
             }
 
             const filename = buildFilename();
-            const root = document.getElementById('evaluation-root');
-
-            tagSelectedRatings();
-            document.body.classList.add('pdf-mode');
-            // Force layout flush so html2canvas captures pdf-mode styles
-            void document.body.offsetHeight;
+            const printable = buildPrintable();
+            document.body.appendChild(printable);
+            void printable.offsetHeight; // force layout
 
             const opts = {
-                margin:       [12, 12, 15, 12],
+                margin:       [10, 10, 12, 10],
                 filename:     filename,
                 image:        { type: 'jpeg', quality: 0.95 },
                 html2canvas:  {
                     scale: 2,
                     useCORS: true,
                     backgroundColor: '#ffffff',
-                    windowWidth: 800,
-                    scrollY: 0,
-                    scrollX: 0
+                    windowWidth: 760
                 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
-                pagebreak:    { mode: ['css', 'legacy'] }
+                pagebreak:    { mode: ['css', 'legacy'], avoid: ['.pdf-crit', '.pdf-summary', '.pdf-sigs'] }
             };
 
-            // Give the browser a frame to apply styles, then export
-            requestAnimationFrame(() => {
-                html2pdf().set(opts).from(root).save().then(() => {
-                    document.body.classList.remove('pdf-mode');
-                    showToast(`Saved: ${filename}`, 'success');
-                }).catch((err) => {
-                    document.body.classList.remove('pdf-mode');
-                    console.error(err);
-                    showToast('PDF export failed. See console for details.', 'info');
-                });
+            html2pdf().set(opts).from(printable).save().then(() => {
+                printable.remove();
+                showToast(`Saved: ${filename}`, 'success');
+            }).catch((err) => {
+                printable.remove();
+                console.error(err);
+                showToast('PDF export failed. See console for details.', 'info');
             });
         }
 
