@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>AISA Teacher Evaluations</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --primary-navy: #002147;
+            --secondary-navy: #003366;
+            --accent-maize: #FFC72C;
+            --accent-maize-hover: #FFE082;
+            --text-light: #F8FAFC;
+            --text-muted: #CBD5E1;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 199, 44, 0.2);
+            --glass-hover: rgba(255, 255, 255, 0.1);
+            --rubric-bg: rgba(255, 255, 255, 0.03);
+            --rating-4: #16a34a;
+            --rating-3: #2563eb;
+            --rating-2: #f59e0b;
+            --rating-1: #dc2626;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(-45deg, #050b14, var(--primary-navy), var(--secondary-navy), #0a192f);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6.5rem 1rem 3rem 1rem;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .logo-left, .logo-right {
+            position: absolute;
+            top: 1.5rem;
+            height: 75px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
+            z-index: 50;
+        }
+        .logo-left { left: 2.5rem; }
+        .logo-right { right: 2.5rem; }
+
+        .back-link {
+            position: fixed;
+            top: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 33, 71, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            padding: 0.6rem 1.5rem;
+            color: var(--accent-maize);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s ease;
+        }
+        .back-link:hover {
+            background: var(--accent-maize);
+            color: var(--primary-navy);
+        }
+
+        .page-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .school-name {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent-maize);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-title {
+            font-size: 2.6rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #FFF, var(--accent-maize-hover));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+
+        /* Info card (evaluator/teacher/date) */
+        .info-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+
+        .info-grid.two-col {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-maize);
+            font-weight: 600;
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 0.6rem;
+            padding: 0.7rem 0.9rem;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.2s ease, background 0.2s ease;
+            width: 100%;
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--accent-maize);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .field textarea {
+            min-height: 90px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .field select option {
+            background: var(--primary-navy);
+            color: var(--text-light);
+        }
+
+        /* Domain block */
+        .domain {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            margin-bottom: 1.75rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .domain-header {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 199, 44, 0.15);
+        }
+
+        .domain-number {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(255, 199, 44, 0.25), rgba(255, 199, 44, 0.05));
+            border: 1px solid rgba(255, 199, 44, 0.35);
+            color: var(--accent-maize);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .domain-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+
+        .domain-guide {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-style: italic;
+            margin: 0.75rem 0 0 0;
+        }
+
+        /* Criterion */
+        .criterion {
+            padding: 1.25rem 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+        }
+        .criterion:last-child { border-bottom: none; }
+
+        .criterion-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .criterion-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-maize-hover);
+        }
+
+        .criterion-tag {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+        }
+
+        /* Rating row - 4 options */
+        .rating-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .rating-option {
+            position: relative;
+        }
+
+        .rating-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .rating-option label {
+            display: block;
+            background: var(--rubric-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.7rem;
+            padding: 0.85rem 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            height: 100%;
+        }
+
+        .rating-option label:hover {
+            border-color: rgba(255, 199, 44, 0.5);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .rating-option input[type="radio"]:checked + label {
+            border-color: var(--accent-maize);
+            background: rgba(255, 199, 44, 0.1);
+            box-shadow: 0 0 0 2px rgba(255, 199, 44, 0.25);
+        }
+
+        .rating-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .badge-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .rating-option[data-level="4"] .badge-dot { background: var(--rating-4); }
+        .rating-option[data-level="3"] .badge-dot { background: var(--rating-3); }
+        .rating-option[data-level="2"] .badge-dot { background: var(--rating-2); }
+        .rating-option[data-level="1"] .badge-dot { background: var(--rating-1); }
+
+        .rating-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        /* Comments + dropdown */
+        .comment-block {
+            display: grid;
+            grid-template-columns: 1fr 240px;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .comment-block .field {
+            gap: 0.35rem;
+        }
+
+        .reflective-prompts {
+            margin-top: 0.5rem;
+            padding: 0.7rem 0.9rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 3px solid var(--accent-maize);
+            border-radius: 0.4rem;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .reflective-prompts strong {
+            color: var(--accent-maize);
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .reflective-prompts ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .reflective-prompts li {
+            padding-left: 1.1rem;
+            position: relative;
+            line-height: 1.5;
+        }
+        .reflective-prompts li::before {
+            content: "\f059";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            color: var(--accent-maize);
+            position: absolute;
+            left: 0;
+            top: 2px;
+            font-size: 0.75rem;
+        }
+
+        /* Actions bar */
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: var(--accent-maize);
+            color: var(--primary-navy);
+            border: none;
+            padding: 0.9rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            font-family: 'Inter', sans-serif;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
+        }
+        .btn.secondary {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--accent-maize);
+        }
+        .btn.secondary:hover {
+            background: var(--glass-hover);
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--accent-maize);
+            color: var(--primary-navy);
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 1000;
+        }
+        .toast-container.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== PDF / PRINT RENDER MODE =====
+           Applied via .pdf-mode class when generating PDF. Converts the
+           glassy dark UI into a clean, printable light layout. */
+        .pdf-mode {
+            background: #ffffff !important;
+            color: #111827 !important;
+            padding: 0 !important;
+            animation: none !important;
+            min-height: auto !important;
+        }
+        .pdf-mode .logo-left,
+        .pdf-mode .logo-right,
+        .pdf-mode .back-link,
+        .pdf-mode .actions,
+        .pdf-mode .comment-dropdown-wrap { display: none !important; }
+
+        .pdf-mode .page-title {
+            -webkit-text-fill-color: #002147 !important;
+            background: none !important;
+            color: #002147 !important;
+        }
+        .pdf-mode .school-name { color: #002147 !important; }
+        .pdf-mode .page-subtitle { color: #374151 !important; }
+        .pdf-mode .info-card,
+        .pdf-mode .domain {
+            background: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+            color: #111827 !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        .pdf-mode .domain-header { border-bottom-color: #e5e7eb !important; }
+        .pdf-mode .domain-title { color: #002147 !important; }
+        .pdf-mode .domain-guide { color: #374151 !important; }
+        .pdf-mode .domain-number {
+            background: #FFC72C !important;
+            color: #002147 !important;
+            border-color: #e0b020 !important;
+        }
+        .pdf-mode .field label { color: #002147 !important; }
+        .pdf-mode .field input,
+        .pdf-mode .field textarea,
+        .pdf-mode .field select {
+            background: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+            color: #111827 !important;
+        }
+        .pdf-mode .criterion-name { color: #002147 !important; }
+        .pdf-mode .criterion-tag { background: #f3f4f6 !important; color: #374151 !important; border-color: #e5e7eb !important; }
+        .pdf-mode .rating-option label {
+            background: #f9fafb !important;
+            color: #374151 !important;
+            border-color: #e5e7eb !important;
+        }
+        .pdf-mode .rating-option input[type="radio"]:checked + label {
+            background: #fff7db !important;
+            border-color: #FFC72C !important;
+            box-shadow: 0 0 0 2px #FFC72C !important;
+            color: #111827 !important;
+        }
+        .pdf-mode .rating-desc { color: #4b5563 !important; }
+        .pdf-mode .reflective-prompts {
+            background: #f9fafb !important;
+            color: #374151 !important;
+            border-left-color: #FFC72C !important;
+        }
+        .pdf-mode .criterion {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        .pdf-mode .comment-block { grid-template-columns: 1fr !important; }
+
+        /* Responsive */
+        @media screen and (max-width: 900px) {
+            .info-grid,
+            .info-grid.two-col { grid-template-columns: 1fr; }
+            .rating-row { grid-template-columns: 1fr 1fr; }
+            .comment-block { grid-template-columns: 1fr; }
+            .logo-left, .logo-right { height: 45px; top: 1rem; }
+            .logo-left { left: 1rem; }
+            .logo-right { right: 1rem; }
+            .page-title { font-size: 2rem; }
+            body { padding-top: 5.5rem; }
+        }
+        @media screen and (max-width: 500px) {
+            .rating-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <img src="AISA_logo.png" alt="AISA Logo" class="logo-left" onerror="this.style.display='none'">
+    <img src="ESOL_logo.png" alt="Esol Education Logo" class="logo-right" onerror="this.style.display='none'">
+
+    <a href="index.html" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Back to Hub
+    </a>
+
+    <div class="page-container" id="evaluation-root">
+
+        <header class="page-header">
+            <div class="school-name">American International School in Abu Dhabi</div>
+            <h1 class="page-title">Teacher Evaluation</h1>
+            <p class="page-subtitle">AISA Supervision &amp; Evaluation Program &mdash; 2025-26</p>
+        </header>
+
+        <!-- Evaluator / Teacher / Date info -->
+        <section class="info-card" aria-label="Evaluation Information">
+            <div class="info-grid">
+                <div class="field">
+                    <label for="teacher-name">Teacher Name</label>
+                    <input type="text" id="teacher-name" placeholder="e.g. Jane Smith" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="evaluator-name">Evaluator Name</label>
+                    <input type="text" id="evaluator-name" placeholder="e.g. John Doe" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="eval-date">Date</label>
+                    <input type="date" id="eval-date">
+                </div>
+            </div>
+            <div class="info-grid two-col" style="margin-top: 1.25rem;">
+                <div class="field">
+                    <label for="grade-level">Grade Level / Subject</label>
+                    <input type="text" id="grade-level" placeholder="e.g. Grade 5 / Mathematics" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="eval-type">Evaluation Type</label>
+                    <select id="eval-type">
+                        <option value="Mini-Observation">Mini-Observation</option>
+                        <option value="Formal Observation">Formal Observation</option>
+                        <option value="Mid-Year Review">Mid-Year Review</option>
+                        <option value="End-of-Year Evaluation">End-of-Year Evaluation</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== DOMAIN 1 ========== -->
+        <section class="domain" id="domain-1">
+            <div class="domain-header">
+                <div class="domain-number">1</div>
+                <div>
+                    <div class="domain-title">Planning and Preparation</div>
+                </div>
+            </div>
+
+            <!-- Criterion: Knowledge -->
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Knowledge</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4">
+                        <input type="radio" id="d1-knowledge-4" name="d1-knowledge" value="4">
+                        <label for="d1-knowledge-4">
+                            <div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div>
+                            <div class="rating-desc">Exceptional mastery of subject matter and innovative application of IB approaches. Consistently integrates interdisciplinary connections and real-world applications.</div>
+                        </label>
+                    </div>
+                    <div class="rating-option" data-level="3">
+                        <input type="radio" id="d1-knowledge-3" name="d1-knowledge" value="3">
+                        <label for="d1-knowledge-3">
+                            <div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div>
+                            <div class="rating-desc">Strong knowledge of subject matter and effectively applies IB approaches. Makes relevant connections across disciplines and to real-world scenarios.</div>
+                        </label>
+                    </div>
+                    <div class="rating-option" data-level="2">
+                        <input type="radio" id="d1-knowledge-2" name="d1-knowledge" value="2">
+                        <label for="d1-knowledge-2">
+                            <div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div>
+                            <div class="rating-desc">Adequate knowledge and some understanding of IB approaches. Occasionally makes connections to other disciplines or real-world applications.</div>
+                        </label>
+                    </div>
+                    <div class="rating-option" data-level="1">
+                        <input type="radio" id="d1-knowledge-1" name="d1-knowledge" value="1">
+                        <label for="d1-knowledge-1">
+                            <div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div>
+                            <div class="rating-desc">Limited familiarity with subject matter and few ideas on IB approaches. Rarely makes connections beyond the immediate topic.</div>
+                        </label>
+                    </div>
+                </div>
+                <div class="comment-block">
+                    <div class="field">
+                        <label>Comments</label>
+                        <textarea data-comment="d1-knowledge" placeholder="Evidence-based notes..."></textarea>
+                    </div>
+                    <div class="field comment-dropdown-wrap">
+                        <label>Quick Add Comment</label>
+                        <select data-target="d1-knowledge" class="quick-comment">
+                            <option value="">Insert a general comment...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Criterion: Standards & IB Integration -->
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Standards and IB Integration</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4">
+                        <input type="radio" id="d1-standards-4" name="d1-standards" value="4">
+                        <label for="d1-standards-4">
+                            <div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div>
+                            <div class="rating-desc">Masterfully plans units integrating IB curriculum frameworks with local standards. Innovatively addresses international-mindedness and the Learner Profile.</div>
+                        </label>
+                    </div>
+                    <div class="rating-option" data-level="3">
+                        <input type="radio" id="d1-standards-3" name="d1-standards" value="3">
+                        <label for="d1-standards-3">
+                            <div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div>
+                            <div class="rating-desc">Plans units aligned with IB frameworks and local standards. Consistently incorporates key elements including international-mindedness.</div>
+                        </label>
+                    </div>
+                    <div class="rating-option" data-level="2">
+                        <input type="radio" id="d1-standards-2" name="d1-standards" value="2">
+                        <label for="d1-standards-2">
+                            <div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div>
+                            <div class="rating-desc">Some planning around IB frameworks and local standards with inconsistent preparation. Attempts to incorporate some elements but may miss key components.</div>
+                        </label>
+                    </div>
+                    <div class="rating-option" data-level="1">
+                        <input type="radio" id="d1-standards-1" name="d1-standards" value="1">
+                        <label for="d1-standards-1">
+                            <div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div>
+                            <div class="rating-desc">Little consideration of IB frameworks or local standards; minimal evidence of IB programme elements in planning.</div>
+                        </label>
+                    </div>
+                </div>
+                <div class="comment-block">
+                    <div class="field">
+                        <label>Comments</label>
+                        <textarea data-comment="d1-standards" placeholder="Evidence-based notes..."></textarea>
+                    </div>
+                    <div class="field comment-dropdown-wrap">
+                        <label>Quick Add Comment</label>
+                        <select data-target="d1-standards" class="quick-comment">
+                            <option value="">Insert a general comment...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Criterion: Lesson Design -->
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Lesson Design</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4">
+                        <input type="radio" id="d1-lesson-4" name="d1-lesson" value="4">
+                        <label for="d1-lesson-4">
+                            <div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div>
+                            <div class="rating-desc">Designs innovative lessons with challenging objectives, engaging activities, and exemplary differentiation. Consistently incorporates student choice and inquiry.</div>
+                        </label>
+                    </div>
+                    <div class="rating-option" data-level="3">
+                        <input type="radio" id="d1-lesson-3" name="d1-lesson" value="3">
+                        <label for="d1-lesson-3">
+                            <div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div>
+                            <div class="rating-desc">Designs lessons with clear objectives, engaging activities, and effective differentiation supporting IB Learner Profile attributes.</div>
+                        </label>
+                    </div>
+                    <div class="rating-option" data-level="2">
+                        <input type="radio" id="d1-lesson-2" name="d1-lesson" value="2">
+                        <label for="d1-lesson-2">
+                            <div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div>
+                            <div class="rating-desc">Plans with some objectives and activities; limited differentiation. Occasionally includes student choice or inquiry-based elements.</div>
+                        </label>
+                    </div>
+                    <div class="rating-option" data-level="1">
+                        <input type="radio" id="d1-lesson-1" name="d1-lesson" value="1">
+                        <label for="d1-lesson-1">
+                            <div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div>
+                            <div class="rating-desc">Lessons lack clear objectives or engaging elements. Rarely includes opportunities for student choice or inquiry.</div>
+                        </label>
+                    </div>
+                </div>
+                <div class="comment-block">
+                    <div class="field">
+                        <label>Comments</label>
+                        <textarea data-comment="d1-lesson" placeholder="Evidence-based notes..."></textarea>
+                    </div>
+                    <div class="field comment-dropdown-wrap">
+                        <label>Quick Add Comment</label>
+                        <select data-target="d1-lesson" class="quick-comment">
+                            <option value="">Insert a general comment...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Criterion: Assessment (planning) -->
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Assessment (Planning)</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4">
+                        <input type="radio" id="d1-assess-4" name="d1-assess" value="4">
+                        <label for="d1-assess-4">
+                            <div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div>
+                            <div class="rating-desc">Comprehensive, balanced assessment system with innovative formative and summative strategies aligned with IB philosophies. Multiple pathways to demonstrate learning.</div>
+                        </label>
+                    </div>
+                    <div class="rating-option" data-level="3">
+                        <input type="radio" id="d1-assess-3" name="d1-assess" value="3">
+                        <label for="d1-assess-3">
+                            <div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div>
+                            <div class="rating-desc">Plans effective formative and summative assessments aligned with IB criteria. Regularly uses data to adjust instruction.</div>
+                        </label>
+                    </div>
+                    <div class="rating-option" data-level="2">
+                        <input type="radio" id="d1-assess-2" name="d1-assess" value="2">
+                        <label for="d1-assess-2">
+                            <div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div>
+                            <div class="rating-desc">Drafts some assessments but lacks consistent alignment with IB criteria. Occasionally uses data to inform instruction.</div>
+                        </label>
+                    </div>
+                    <div class="rating-option" data-level="1">
+                        <input type="radio" id="d1-assess-1" name="d1-assess" value="1">
+                        <label for="d1-assess-1">
+                            <div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div>
+                            <div class="rating-desc">Relies mainly on summative tests with little formative assessment or IB alignment. Rarely uses data to inform instruction.</div>
+                        </label>
+                    </div>
+                </div>
+                <div class="comment-block">
+                    <div class="field">
+                        <label>Comments</label>
+                        <textarea data-comment="d1-assess" placeholder="Evidence-based notes..."></textarea>
+                    </div>
+                    <div class="field comment-dropdown-wrap">
+                        <label>Quick Add Comment</label>
+                        <select data-target="d1-assess" class="quick-comment">
+                            <option value="">Insert a general comment...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== DOMAIN 2 ========== -->
+        <section class="domain" id="domain-2">
+            <div class="domain-header">
+                <div class="domain-number">2</div>
+                <div>
+                    <div class="domain-title">Classroom Environment</div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Expectations</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d2-exp-4" name="d2-exp" value="4"><label for="d2-exp-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Culture exemplifies the IB Learner Profile; students take ownership and actively support each other's growth.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d2-exp-3" name="d2-exp" value="3"><label for="d2-exp-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Clearly communicates and consistently enforces high standards, referencing school values and IB attributes.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d2-exp-2" name="d2-exp" value="2"><label for="d2-exp-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Announces rules but inconsistently enforces them; limited connection to values or IB attributes.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d2-exp-1" name="d2-exp" value="1"><label for="d2-exp-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Few clear expectations; students are often unsure of what is expected.</div></label></div>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d2-exp" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d2-exp" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Relationships</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d2-rel-4" name="d2-rel" value="4"><label for="d2-rel-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Builds exceptional, culturally responsive relationships fostering a deeply inclusive classroom community.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d2-rel-3" name="d2-rel" value="3"><label for="d2-rel-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Fair and respectful, builds positive relationships that support international-mindedness.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d2-rel-2" name="d2-rel" value="2"><label for="d2-rel-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Respectful to most, but struggles to build relationships with some; inconsistent focus on international perspectives.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d2-rel-1" name="d2-rel" value="1"><label for="d2-rel-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Sometimes unfair or disrespectful; minimal effort to build positive relationships.</div></label></div>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d2-rel" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d2-rel" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Routines</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d2-rout-4" name="d2-rout" value="4"><label for="d2-rout-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Students create, maintain, and adapt routines that maximize learning and support inquiry-based learning.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d2-rout-3" name="d2-rout" value="3"><label for="d2-rout-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Teaches effective routines and students maintain them throughout the year, supporting IB unit structures.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d2-rout-2" name="d2-rout" value="2"><label for="d2-rout-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Tries to establish routines but they are not consistently followed or supportive of IB approaches.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d2-rout-1" name="d2-rout" value="1"><label for="d2-rout-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Does not teach or maintain clear routines; class time often lost to disorganization.</div></label></div>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d2-rout" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d2-rout" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Physical Space</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d2-space-4" name="d2-space" value="4"><label for="d2-space-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Inspiring environment showcasing student work, supporting collaboration, and reflecting global perspectives.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d2-space-3" name="d2-space" value="3"><label for="d2-space-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Organized to support learning with relevant displays and materials, including some international content.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d2-space-2" name="d2-space" value="2"><label for="d2-space-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Some organization but limited use of space; may not always support collaborative or inquiry-based learning.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d2-space-1" name="d2-space" value="1"><label for="d2-space-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Disorganized; little thought given to how physical space supports learning or reflects IB principles.</div></label></div>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d2-space" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d2-space" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== DOMAIN 3 ========== -->
+        <section class="domain" id="domain-3">
+            <div class="domain-header">
+                <div class="domain-number">3</div>
+                <div>
+                    <div class="domain-title">Instruction</div>
+                </div>
+            </div>
+            <p class="domain-guide">Guiding Question: How effectively am I engaging students, asking questions, differentiating, and using resources to support learning?</p>
+
+            <div class="criterion">
+                <div class="criterion-head">
+                    <div class="criterion-name">Engagement</div>
+                    <span class="criterion-tag">ADEK 1.1, 3.1</span>
+                </div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d3-eng-4" name="d3-eng" value="4"><label for="d3-eng-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Consistently creates highly engaging lessons. Students take ownership and connect to real-world issues. Uses a range of strategies (Cold Call, Turn &amp; Talk, Narrate the Positive) so all students are thinking and participating.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d3-eng-3" name="d3-eng" value="3"><label for="d3-eng-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Actively engages most students using discussion, collaboration, and checks for understanding. Regularly applies IB approaches and strategies like Call &amp; Response or No Opt Out.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d3-eng-2" name="d3-eng" value="2"><label for="d3-eng-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Attempts to engage students, but some remain passive or off-task. Strategies are limited; working on routines for active participation.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d3-eng-1" name="d3-eng" value="1"><label for="d3-eng-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Lessons are mostly teacher-centered with little student engagement. Few strategies used to involve students.</div></label></div>
+                </div>
+                <div class="reflective-prompts">
+                    <strong>Reflective Prompts</strong>
+                    <ul>
+                        <li>Did I circulate and check on all students during the lesson?</li>
+                        <li>How many students answered questions today &ndash; was it the same few or the whole class?</li>
+                        <li>Did I create moments of joy, energy, or challenge that kept students engaged?</li>
+                    </ul>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d3-eng" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d3-eng" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head">
+                    <div class="criterion-name">Questioning</div>
+                    <span class="criterion-tag">ADEK 1.3, 3.4</span>
+                </div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d3-q-4" name="d3-q" value="4"><label for="d3-q-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Masterfully uses varied questions (Stretch It, Habits of Discussion, Roll Back) that push students to think critically, build on each other's ideas, and connect to global perspectives.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d3-q-3" name="d3-q" value="3"><label for="d3-q-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Asks questions that spark good discussion and deeper thinking. Waits for responses and encourages reasoning.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d3-q-2" name="d3-q" value="2"><label for="d3-q-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Asks some open questions but discussions are limited in depth or dominated by a few voices. Wait time and follow-up are inconsistent.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d3-q-1" name="d3-q" value="1"><label for="d3-q-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Questions are mostly surface-level or recall-based, with little student discussion.</div></label></div>
+                </div>
+                <div class="reflective-prompts">
+                    <strong>Reflective Prompts</strong>
+                    <ul>
+                        <li>Did my questions today push students to explain their thinking, not just give quick answers?</li>
+                        <li>How often did I ask students to build off each other's ideas?</li>
+                    </ul>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d3-q" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d3-q" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head">
+                    <div class="criterion-name">Differentiation</div>
+                    <span class="criterion-tag">ADEK 2.1, 3.3</span>
+                </div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d3-diff-4" name="d3-diff" value="4"><label for="d3-diff-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Seamlessly plans for and adjusts to different learning needs using strategies like Show Call, Stamp the Understanding, Aggressively Monitor. All learners challenged and supported.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d3-diff-3" name="d3-diff" value="3"><label for="d3-diff-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Regularly differentiates instruction by adjusting tasks or supports. Most learners access the lesson successfully.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d3-diff-2" name="d3-diff" value="2"><label for="d3-diff-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Tries to accommodate some needs but often uses a one-size-fits-all approach. Differentiation is inconsistent.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d3-diff-1" name="d3-diff" value="1"><label for="d3-diff-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Rarely differentiates or adjusts instruction for student needs.</div></label></div>
+                </div>
+                <div class="reflective-prompts">
+                    <strong>Reflective Prompts</strong>
+                    <ul>
+                        <li>Did I notice who needed extra support or challenge throughout the lesson?</li>
+                        <li>How did I respond in the moment when a student didn't understand?</li>
+                    </ul>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d3-diff" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d3-diff" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head">
+                    <div class="criterion-name">Use of Technology</div>
+                    <span class="criterion-tag">ADEK 3.1</span>
+                </div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d3-tech-4" name="d3-tech" value="4"><label for="d3-tech-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Integrates resources and technology in innovative ways that transform learning. Students use tools to collaborate, create, and connect globally.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d3-tech-3" name="d3-tech" value="3"><label for="d3-tech-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Uses resources and technology purposefully to enhance learning and support IB approaches.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d3-tech-2" name="d3-tech" value="2"><label for="d3-tech-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Sometimes uses resources or technology, but not always effectively or with a clear learning purpose.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d3-tech-1" name="d3-tech" value="1"><label for="d3-tech-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Rarely uses technology or resources to support instruction; use does not support learning.</div></label></div>
+                </div>
+                <div class="reflective-prompts">
+                    <strong>Reflective Prompts</strong>
+                    <ul>
+                        <li>Were the resources I used essential to student learning or just an add-on?</li>
+                        <li>Did technology help students collaborate, explore, or show their understanding in a deeper way?</li>
+                    </ul>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d3-tech" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d3-tech" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== DOMAIN 4 ========== -->
+        <section class="domain" id="domain-4">
+            <div class="domain-header">
+                <div class="domain-number">4</div>
+                <div>
+                    <div class="domain-title">Assessment and Follow-Up</div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Feedback</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d4-fb-4" name="d4-fb" value="4"><label for="d4-fb-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Exemplary, timely, specific feedback that guides improvement and fosters student self-assessment aligned with IB practices. Feedback is individualized and promotes reflection and goal-setting.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d4-fb-3" name="d4-fb" value="3"><label for="d4-fb-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Gives students timely, specific feedback referencing IB assessment criteria. Regular feedback helps students understand their progress.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d4-fb-2" name="d4-fb" value="2"><label for="d4-fb-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Provides some feedback, but not always timely or specific. Feedback may be general or infrequent.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d4-fb-1" name="d4-fb" value="1"><label for="d4-fb-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Gives little meaningful feedback. When given, feedback is vague or unhelpful.</div></label></div>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d4-fb" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d4-fb" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Reflection</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d4-ref-4" name="d4-ref" value="4"><label for="d4-ref-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Engages in deep, ongoing reflection, using data innovatively to improve instruction and IB program development. Actively incorporates student feedback.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d4-ref-3" name="d4-ref" value="3"><label for="d4-ref-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Regularly reflects and uses data to improve instruction, considering IB unit evaluations. Reflection leads to meaningful adjustments.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d4-ref-2" name="d4-ref" value="2"><label for="d4-ref-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Sometimes reflects but doesn't consistently use data or IB unit reflections. Reflections may be superficial.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d4-ref-1" name="d4-ref" value="1"><label for="d4-ref-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Rarely reflects or uses data. Little evidence of reflection informing teaching practices.</div></label></div>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d4-ref" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d4-ref" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Reteaching</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d4-re-4" name="d4-re" value="4"><label for="d4-re-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Implements sophisticated, data-driven strategies to adjust teaching and provide targeted support aligned with IB learning objectives. Proactively addresses individual needs.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d4-re-3" name="d4-re" value="3"><label for="d4-re-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Uses assessment data to adjust teaching and support struggling students. Regularly checks for understanding and reteaches as necessary.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d4-re-2" name="d4-re" value="2"><label for="d4-re-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Sometimes reteaches but doesn't consistently follow up or align with IB objectives. Reteaching may be reactive.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d4-re-1" name="d4-re" value="1"><label for="d4-re-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Moves on without analyzing assessments or reteaching. Little effort to address gaps in understanding.</div></label></div>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d4-re" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d4-re" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== DOMAIN 5 ========== -->
+        <section class="domain" id="domain-5">
+            <div class="domain-header">
+                <div class="domain-number">5</div>
+                <div>
+                    <div class="domain-title">Professionalism</div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Collaboration</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d5-col-4" name="d5-col" value="4"><label for="d5-col-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Leads in fostering collaboration, sharing best practices, and innovating IB unit planning. Initiates collaborative projects that enhance the IB program.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d5-col-3" name="d5-col" value="3"><label for="d5-col-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Actively collaborates with colleagues to plan and improve instruction, participating effectively in IB collaborative planning.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d5-col-2" name="d5-col" value="2"><label for="d5-col-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Participates in some collaboration but could be more engaged. Contributions are inconsistent.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d5-col-1" name="d5-col" value="1"><label for="d5-col-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Rarely collaborates or shares ideas. May resist or avoid collaborative planning.</div></label></div>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d5-col" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d5-col" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Communication</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d5-com-4" name="d5-com" value="4"><label for="d5-com-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Establishes highly effective partnerships with families, providing clear, regular communication and innovative ways to support IB learning at home.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d5-com-3" name="d5-com" value="3"><label for="d5-com-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Communicates clearly and regularly with families about student progress. Maintains open lines and responds promptly.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d5-com-2" name="d5-com" value="2"><label for="d5-com-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Some communication with families, but inconsistent or lacking information about the IB program.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d5-com-1" name="d5-com" value="1"><label for="d5-com-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Rarely communicates with families; when done, communication is unclear or only about problems.</div></label></div>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d5-com" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d5-com" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Professional Growth</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d5-grow-4" name="d5-grow" value="4"><label for="d5-grow-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Continuously seeks cutting-edge PD and contributes significantly to school and IB program improvement. Shares learning and mentors.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d5-grow-3" name="d5-grow" value="3"><label for="d5-grow-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Seeks PD and implements new strategies, engaging in IB professional development. Regularly applies new learning.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d5-grow-2" name="d5-grow" value="2"><label for="d5-grow-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">Participates in required PD but doesn't consistently implement new learning or engage fully with IB workshops.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d5-grow-1" name="d5-grow" value="1"><label for="d5-grow-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Resists professional growth; shows little interest in improving practice or staying current with IB developments.</div></label></div>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d5-grow" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d5-grow" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+
+            <div class="criterion">
+                <div class="criterion-head"><div class="criterion-name">Health and Safety</div></div>
+                <div class="rating-row">
+                    <div class="rating-option" data-level="4"><input type="radio" id="d5-hs-4" name="d5-hs" value="4"><label for="d5-hs-4"><div class="rating-badge"><span class="badge-dot"></span>4 &mdash; Exemplary</div><div class="rating-desc">Comprehensive knowledge of H&amp;S policies applied with precision. Anticipates risks and implements preventive measures without prompting. Leads calmly and decisively during incidents.</div></label></div>
+                    <div class="rating-option" data-level="3"><input type="radio" id="d5-hs-3" name="d5-hs" value="3"><label for="d5-hs-3"><div class="rating-badge"><span class="badge-dot"></span>3 &mdash; Effective</div><div class="rating-desc">Strong knowledge of H&amp;S policies applied consistently. Identifies and addresses risks in a timely way. Responds calmly to incidents.</div></label></div>
+                    <div class="rating-option" data-level="2"><input type="radio" id="d5-hs-2" name="d5-hs" value="2"><label for="d5-hs-2"><div class="rating-badge"><span class="badge-dot"></span>2 &mdash; Developing</div><div class="rating-desc">General understanding of H&amp;S policies but may require reminders. Identifies obvious risks; communicates when prompted.</div></label></div>
+                    <div class="rating-option" data-level="1"><input type="radio" id="d5-hs-1" name="d5-hs" value="1"><label for="d5-hs-1"><div class="rating-badge"><span class="badge-dot"></span>1 &mdash; Does Not Meet</div><div class="rating-desc">Limited or insufficient understanding of H&amp;S policies. Fails to identify or address risks; responds ineffectively to incidents.</div></label></div>
+                </div>
+                <div class="comment-block">
+                    <div class="field"><label>Comments</label><textarea data-comment="d5-hs" placeholder="Evidence-based notes..."></textarea></div>
+                    <div class="field comment-dropdown-wrap"><label>Quick Add Comment</label><select data-target="d5-hs" class="quick-comment"><option value="">Insert a general comment...</option></select></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== OVERALL SUMMARY ========== -->
+        <section class="info-card" aria-label="Overall Summary">
+            <div class="info-grid two-col">
+                <div class="field">
+                    <label for="strengths">Key Strengths</label>
+                    <textarea id="strengths" placeholder="Overall strengths observed..."></textarea>
+                </div>
+                <div class="field">
+                    <label for="growth-areas">Areas for Growth</label>
+                    <textarea id="growth-areas" placeholder="Priority growth areas and next steps..."></textarea>
+                </div>
+            </div>
+            <div class="info-grid two-col" style="margin-top: 1.25rem;">
+                <div class="field">
+                    <label for="followup">Follow-Up / Support Plan</label>
+                    <textarea id="followup" placeholder="Targeted PD, mentoring, check-ins..."></textarea>
+                </div>
+                <div class="field">
+                    <label for="overall-rating">Overall Rating</label>
+                    <select id="overall-rating">
+                        <option value="">Select an overall rating...</option>
+                        <option value="4 - Exemplary">4 &mdash; Exemplary</option>
+                        <option value="3 - Effective">3 &mdash; Effective</option>
+                        <option value="2 - Developing">2 &mdash; Developing</option>
+                        <option value="1 - Does Not Meet Standards">1 &mdash; Does Not Meet Standards</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Actions -->
+        <div class="actions">
+            <button type="button" class="btn" id="save-pdf-btn">
+                <i class="fa-solid fa-file-pdf"></i> Save as PDF
+            </button>
+            <button type="button" class="btn secondary" id="reset-btn">
+                <i class="fa-solid fa-rotate-left"></i> Reset Form
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast-container">
+        <i class="fa-solid fa-circle-check" id="toast-icon"></i>
+        <span id="toast-message">Saved!</span>
+    </div>
+
+    <script>
+        /* ---------- Pre-set comment bank ---------- */
+        const COMMENT_BANK = {
+            // ===== DOMAIN 1 =====
+            'd1-knowledge': [
+                'Demonstrates strong mastery of subject matter, with clear links to IB approaches to teaching and learning.',
+                'Effectively integrates interdisciplinary connections that deepen student understanding.',
+                'Continue to deepen content pedagogy by embedding more real-world applications into lessons.',
+                'Consider strengthening familiarity with IB frameworks through targeted collaborative planning.'
+            ],
+            'd1-standards': [
+                'Unit planning is well-aligned with IB frameworks and local standards.',
+                'Evidence of international-mindedness and the Learner Profile embedded throughout planning.',
+                'Inconsistent alignment with IB assessment criteria — recommend review with IB coordinator.',
+                'Limited evidence of IB programme elements in current planning documents.'
+            ],
+            'd1-lesson': [
+                'Lesson design features clear objectives, engaging activities, and meaningful differentiation.',
+                'Strong use of student choice and inquiry-based elements to promote ownership of learning.',
+                'Work on developing measurable learning objectives tied to success criteria.',
+                'Plan more intentional differentiation to support a wider range of learners.'
+            ],
+            'd1-assess': [
+                'Formative and summative assessments are well-aligned with IB criteria.',
+                'Consistently uses data to inform and adjust instruction.',
+                'Diversify assessment types so students can demonstrate learning in multiple ways.',
+                'Limited formative assessment was evident — recommend building in regular checks for understanding.'
+            ],
+            // ===== DOMAIN 2 =====
+            'd2-exp': [
+                'High, consistent expectations are clearly communicated and reinforced throughout the lesson.',
+                'Students demonstrate ownership of classroom norms tied to the Learner Profile.',
+                'Work on consistent follow-through when expectations are not met.',
+                'Expectations would benefit from being explicitly tied to school values and IB attributes.'
+            ],
+            'd2-rel': [
+                'Warm, respectful rapport evident with students; inclusive classroom community.',
+                'Culturally responsive relationships that celebrate student diversity.',
+                'Build stronger connections with students who appear less engaged.',
+                'Work on consistency of tone and fairness across all student interactions.'
+            ],
+            'd2-rout': [
+                'Routines are well-established and maximize learning time.',
+                'Students move smoothly between tasks with minimal direction.',
+                'Invest in teaching and practicing key routines to reduce transition time.',
+                'Several routines are unclear to students, resulting in lost instructional time.'
+            ],
+            'd2-space': [
+                'Classroom environment showcases student work and supports collaboration.',
+                'Physical layout is flexible and adapts well to varied learning activities.',
+                'Consider refreshing displays to reflect current units and student work.',
+                'The space is not currently configured to support inquiry-based or collaborative learning.'
+            ],
+            // ===== DOMAIN 3 =====
+            'd3-eng': [
+                'Consistently engages all students using a variety of participation strategies (Cold Call, Turn & Talk).',
+                'High levels of student thinking and participation across the lesson.',
+                'Widen the range of engagement strategies so more voices are heard.',
+                'Lesson was largely teacher-centered; plan for more active student thinking opportunities.'
+            ],
+            'd3-q': [
+                'Skilful use of higher-order questioning that pushes student thinking.',
+                'Strong wait-time and follow-up questions that extend student reasoning.',
+                'Incorporate more open-ended and "why/how" questions to deepen discussion.',
+                'Questioning tended toward recall — aim for more questions requiring analysis and justification.'
+            ],
+            'd3-diff': [
+                'Thoughtful differentiation ensures all learners are challenged and supported.',
+                'Evidence of responsive teaching — adjustments made in the moment to meet student needs.',
+                'Plan more intentional supports for EAL and learning support students.',
+                'Consider pre-planned extension tasks for students who finish early or need challenge.'
+            ],
+            'd3-tech': [
+                'Technology is integrated purposefully and enhances the learning outcome.',
+                'Students use digital tools to collaborate, create, and share their thinking.',
+                'Ensure technology use is tied to a clear learning purpose rather than an add-on.',
+                'Limited use of technology was observed — explore tools that would deepen student learning.'
+            ],
+            // ===== DOMAIN 4 =====
+            'd4-fb': [
+                'Timely, specific feedback that helps students understand next steps.',
+                'Feedback fosters self-assessment and goal-setting in students.',
+                'Work on specificity of feedback — link it clearly to IB assessment criteria.',
+                'Increase frequency of actionable feedback during and after tasks.'
+            ],
+            'd4-ref': [
+                'Evident habit of reflective practice informed by student data.',
+                'Uses student feedback meaningfully to refine teaching.',
+                'Deepen reflection by linking to unit evaluations and student outcomes.',
+                'Little evidence of reflective adjustments — recommend keeping a short weekly reflection log.'
+            ],
+            'd4-re': [
+                'Data-driven reteaching ensures gaps are addressed promptly.',
+                'Proactive use of checks for understanding to trigger reteaching.',
+                'Plan reteaching opportunities before moving on when data indicate gaps.',
+                'Consider using exit tickets to identify students needing reteaching.'
+            ],
+            // ===== DOMAIN 5 =====
+            'd5-col': [
+                'Strong contributor to team planning and collaborative inquiry.',
+                'Shares resources and best practice generously with colleagues.',
+                'Increase engagement in collaborative planning sessions.',
+                'Take a more active role in team meetings and unit planning.'
+            ],
+            'd5-com': [
+                'Communicates clearly and proactively with families.',
+                'Parents are well-informed and can support learning at home.',
+                'Increase regularity of family communication, especially positive messages.',
+                'Work on proactive communication before concerns escalate.'
+            ],
+            'd5-grow': [
+                'Actively pursues PD and applies new learning to classroom practice.',
+                'Regularly takes on new learning and shares with colleagues.',
+                'Identify a focused growth area and pursue targeted PD for it.',
+                'Engage more fully with required PD and bring learning back into practice.'
+            ],
+            'd5-hs': [
+                'Strong knowledge and application of all health and safety policies.',
+                'Models calm, decisive response to incidents in line with protocols.',
+                'Review emergency procedures and remain attentive to less-visible risks.',
+                'Revisit H&S protocols with line manager to ensure consistent application.'
+            ]
+        };
+
+        /* ---------- Populate dropdowns ---------- */
+        function populateQuickComments() {
+            document.querySelectorAll('select.quick-comment').forEach(select => {
+                const target = select.dataset.target;
+                const options = COMMENT_BANK[target] || [];
+                options.forEach(text => {
+                    const opt = document.createElement('option');
+                    opt.value = text;
+                    opt.textContent = text.length > 80 ? text.slice(0, 77) + '…' : text;
+                    select.appendChild(opt);
+                });
+                select.addEventListener('change', (e) => {
+                    const chosen = e.target.value;
+                    if (!chosen) return;
+                    const textarea = document.querySelector(`textarea[data-comment="${target}"]`);
+                    if (textarea) {
+                        const existing = textarea.value.trim();
+                        textarea.value = existing ? existing + ' ' + chosen : chosen;
+                        textarea.focus();
+                    }
+                    e.target.value = '';
+                });
+            });
+        }
+
+        /* ---------- Set default date ---------- */
+        function setTodayDate() {
+            const d = new Date();
+            const iso = d.toISOString().slice(0, 10);
+            const el = document.getElementById('eval-date');
+            if (el && !el.value) el.value = iso;
+        }
+
+        /* ---------- Toast ---------- */
+        let toastTimeout;
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+            toastIcon.className = type === 'info' ? 'fa-solid fa-circle-info' : 'fa-solid fa-circle-check';
+            toastMsg.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        /* ---------- Filename helpers ---------- */
+        function sanitizeForFilename(str) {
+            return (str || '').trim().replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, ' ').trim();
+        }
+
+        function buildFilename() {
+            const dateRaw = document.getElementById('eval-date').value;
+            let datePart;
+            if (dateRaw && /^\d{4}-\d{2}-\d{2}$/.test(dateRaw)) {
+                datePart = dateRaw;
+            } else {
+                const d = new Date();
+                datePart = d.toISOString().slice(0, 10);
+            }
+            const teacher = sanitizeForFilename(document.getElementById('teacher-name').value) || 'Teacher';
+            const evaluator = sanitizeForFilename(document.getElementById('evaluator-name').value) || 'Evaluator';
+            return `${datePart}-${teacher}-${evaluator}.pdf`;
+        }
+
+        /* ---------- PDF export ---------- */
+        function saveAsPDF() {
+            const teacher = document.getElementById('teacher-name').value.trim();
+            const evaluator = document.getElementById('evaluator-name').value.trim();
+            if (!teacher || !evaluator) {
+                showToast('Please enter Teacher and Evaluator names first.', 'info');
+                return;
+            }
+
+            const filename = buildFilename();
+            const root = document.getElementById('evaluation-root');
+
+            // Switch to print styling on the body (so backgrounds/gradient become white)
+            document.body.classList.add('pdf-mode');
+
+            const opts = {
+                margin:       [10, 10, 12, 10],
+                filename:     filename,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opts).from(root).save().then(() => {
+                document.body.classList.remove('pdf-mode');
+                showToast(`Saved: ${filename}`, 'success');
+            }).catch((err) => {
+                document.body.classList.remove('pdf-mode');
+                console.error(err);
+                showToast('PDF export failed. See console for details.', 'info');
+            });
+        }
+
+        /* ---------- Reset ---------- */
+        function resetForm() {
+            if (!confirm('Clear all fields? This cannot be undone.')) return;
+            document.querySelectorAll('#evaluation-root input[type="text"], #evaluation-root textarea').forEach(el => el.value = '');
+            document.querySelectorAll('#evaluation-root input[type="radio"]').forEach(el => el.checked = false);
+            document.querySelectorAll('#evaluation-root select').forEach(el => { el.selectedIndex = 0; });
+            setTodayDate();
+            showToast('Form cleared.', 'info');
+        }
+
+        /* ---------- Init ---------- */
+        document.addEventListener('DOMContentLoaded', () => {
+            populateQuickComments();
+            setTodayDate();
+            document.getElementById('save-pdf-btn').addEventListener('click', saveAsPDF);
+            document.getElementById('reset-btn').addEventListener('click', resetForm);
+        });
+    </script>
+
+</body>
+</html>
+
+
