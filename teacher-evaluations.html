@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISA Teacher Evaluation</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* ============ BASE ============ */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        :root {
+            --navy: #002147;
+            --navy-2: #003366;
+            --maize: #FFC72C;
+            --maize-soft: #fff4cc;
+            --ink: #111827;
+            --muted: #4b5563;
+            --line: #cbd5e1;
+            --line-soft: #e5e7eb;
+            --surface: #e5e7eb;
+            --page-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: var(--surface);
+            font-family: 'Inter', Arial, sans-serif;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            padding: 28px 16px 48px 16px;
+            min-height: 100vh;
+        }
+
+        /* ============ DOCUMENT + A4 PAGES ============ */
+        .document {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            width: 100%;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            background: var(--page-bg);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+            padding: 16mm 14mm;
+            position: relative;
+            overflow: hidden;
+            page-break-after: always;
+            break-after: page;
+            color: var(--ink);
+            font-size: 10.5pt;
+            line-height: 1.45;
+        }
+
+        .page:last-child {
+            page-break-after: auto;
+            break-after: auto;
+        }
+
+        .page-footer {
+            position: absolute;
+            bottom: 6mm;
+            left: 14mm;
+            right: 14mm;
+            display: flex;
+            justify-content: space-between;
+            font-size: 8pt;
+            color: #6b7280;
+            padding-top: 3mm;
+            border-top: 1px solid var(--line-soft);
+        }
+
+        /* ============ TYPOGRAPHY ============ */
+        h1, h2, h3, h4 { color: var(--navy); margin: 0; }
+        h1 { font-size: 22pt; font-weight: 800; letter-spacing: -0.3px; }
+        h2 { font-size: 15pt; font-weight: 700; }
+        h3 { font-size: 12pt; font-weight: 700; }
+        h4 { font-size: 10.5pt; font-weight: 700; }
+        p  { margin: 0 0 8px 0; }
+
+        .eyebrow {
+            font-size: 8.5pt;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--navy);
+            font-weight: 600;
+        }
+
+        .muted { color: var(--muted); }
+        .hairline { height: 2px; background: var(--maize); border-radius: 2px; margin: 6px 0 14px; width: 60px; }
+
+        /* ============ COVER HEADER ============ */
+        .cover-header {
+            text-align: center;
+            padding: 6mm 0 8mm 0;
+            border-bottom: 2px solid var(--navy);
+            margin-bottom: 8mm;
+        }
+        .cover-header .eyebrow { margin-bottom: 4px; }
+        .cover-header h1 { margin-bottom: 4px; }
+
+        /* ============ SECTION HEADER (per domain) ============ */
+        .domain-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6mm;
+            padding-bottom: 4mm;
+            border-bottom: 2px solid var(--navy);
+        }
+        .domain-header .num {
+            width: 28px;
+            height: 28px;
+            background: var(--maize);
+            color: var(--navy);
+            font-weight: 800;
+            font-size: 12pt;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 28px;
+        }
+        .domain-header h2 { flex: 1; }
+        .domain-guide {
+            font-size: 9.5pt;
+            color: var(--muted);
+            font-style: italic;
+            margin-bottom: 5mm;
+        }
+
+        /* ============ INFO CARD (fillable meta) ============ */
+        .info-card {
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 4mm 5mm;
+            background: #f9fafb;
+            margin-bottom: 6mm;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5mm 6mm;
+        }
+        .info-grid.two { grid-template-columns: 2fr 1fr; margin-top: 4mm; }
+
+        .field-label {
+            display: block;
+            font-size: 8.5pt;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--navy);
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .field-input, .field-select, .field-textarea {
+            width: 100%;
+            font-family: inherit;
+            font-size: 10.5pt;
+            color: var(--ink);
+            background: #ffffff;
+            border: none;
+            border-bottom: 1px solid var(--line);
+            padding: 3px 2px;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+        .field-input:focus, .field-select:focus, .field-textarea:focus {
+            border-bottom-color: var(--navy);
+        }
+        .field-textarea {
+            min-height: 18mm;
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            padding: 6px 8px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+        .field-select { background: #ffffff; }
+
+        /* ============ RATING SCALE TABLE ============ */
+        table.scale {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+            margin: 4mm 0;
+        }
+        table.scale th, table.scale td {
+            border: 1px solid var(--line);
+            padding: 6px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        table.scale th {
+            background: var(--navy);
+            color: #fff;
+            font-weight: 600;
+        }
+        table.scale td.level {
+            width: 18mm;
+            text-align: center;
+            font-weight: 700;
+            color: var(--navy);
+        }
+        table.scale td.label { width: 42mm; font-weight: 600; }
+
+        /* ============ RUBRIC TABLE ============ */
+        table.rubric {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+            table-layout: fixed;
+            margin-bottom: 4mm;
+        }
+        table.rubric th, table.rubric td {
+            border: 1px solid var(--line);
+            padding: 5px 6px;
+            vertical-align: top;
+            text-align: left;
+        }
+        table.rubric thead th {
+            background: var(--navy);
+            color: #fff;
+            font-size: 8.5pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 6px;
+            text-align: center;
+        }
+        table.rubric thead th.criteria-col { text-align: left; }
+        table.rubric thead th .lvl-num {
+            display: block;
+            font-size: 13pt;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        table.rubric col.col-crit { width: 22%; }
+        table.rubric col.col-rate { width: 19.5%; }
+
+        /* Criterion cell (left column) */
+        table.rubric td.criterion {
+            background: #fafbfc;
+            font-weight: 600;
+            color: var(--navy);
+            font-size: 9.5pt;
+        }
+        table.rubric td.criterion .adek {
+            display: inline-block;
+            margin-top: 4px;
+            font-size: 7.5pt;
+            font-weight: 500;
+            color: var(--muted);
+            letter-spacing: 0.3px;
+        }
+
+        /* Rating cell — clickable */
+        td.rating-cell {
+            position: relative;
+            cursor: pointer;
+            transition: background 0.15s ease, box-shadow 0.15s ease;
+            line-height: 1.4;
+        }
+        td.rating-cell:hover {
+            background: #fff8e1;
+        }
+        td.rating-cell input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        td.rating-cell.is-selected {
+            background: var(--maize-soft);
+            box-shadow: inset 0 0 0 2px var(--maize);
+        }
+        td.rating-cell .check-mark {
+            display: none;
+            position: absolute;
+            top: 3px;
+            right: 5px;
+            width: 14px;
+            height: 14px;
+            background: var(--navy);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 9px;
+            line-height: 14px;
+            text-align: center;
+            font-weight: 700;
+        }
+        td.rating-cell.is-selected .check-mark { display: inline-block; }
+
+        /* Reflective prompts row */
+        table.rubric tr.prompt-row td {
+            background: #fff9e6;
+            border-top: 1px dashed var(--maize);
+            font-size: 8.5pt;
+            color: #374151;
+            padding: 4px 8px;
+        }
+        table.rubric tr.prompt-row td strong {
+            color: var(--navy);
+            font-size: 7.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        table.rubric tr.prompt-row ul {
+            margin: 2px 0 0 16px;
+            padding: 0;
+        }
+        table.rubric tr.prompt-row li { margin: 0; }
+
+        /* Comment row (inline inside rubric) */
+        .comment-block {
+            margin-top: 2mm;
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--maize);
+            border-radius: 4px;
+            padding: 5px 8px;
+            background: #fafafa;
+        }
+        .comment-block .field-label { margin-bottom: 3px; }
+        .comment-block .field-textarea {
+            border: none;
+            background: transparent;
+            min-height: 14mm;
+            padding: 0;
+            font-size: 9.5pt;
+        }
+
+        /* Bullet lists */
+        ul.clean, ol.clean { margin: 0 0 8px 18px; padding: 0; }
+        ul.clean li, ol.clean li { margin-bottom: 4px; }
+
+        .callout {
+            background: #f8fafc;
+            border-left: 3px solid var(--navy);
+            padding: 4mm 5mm;
+            border-radius: 0 4px 4px 0;
+            margin-bottom: 5mm;
+        }
+        .callout h3 { margin-bottom: 4px; font-size: 11pt; }
+
+        /* Signature block */
+        .sig-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10mm;
+            margin-top: 10mm;
+        }
+        .sig-line {
+            border-bottom: 1px solid var(--navy);
+            height: 12mm;
+        }
+        .sig-caption {
+            font-size: 9pt;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* ============ FLOATING TOOLBAR ============ */
+        .toolbar {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 500;
+            display: flex;
+            gap: 8px;
+            background: var(--navy);
+            padding: 8px 10px;
+            border-radius: 50px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        .toolbar .btn {
+            font-family: inherit;
+            font-size: 10pt;
+            font-weight: 600;
+            border: none;
+            border-radius: 40px;
+            padding: 8px 16px;
+            cursor: pointer;
+            background: var(--maize);
+            color: var(--navy);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.12s ease, background 0.12s ease;
+        }
+        .toolbar .btn:hover { transform: translateY(-1px); }
+        .toolbar .btn.ghost {
+            background: transparent;
+            color: var(--maize);
+            border: 1px solid rgba(255, 199, 44, 0.45);
+        }
+        .toolbar .btn.ghost:hover { background: rgba(255, 199, 44, 0.12); }
+        .toolbar .back {
+            color: var(--maize);
+            text-decoration: none;
+            font-size: 10pt;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+        }
+
+        /* ============ TOAST ============ */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--navy);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-size: 10pt;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ============ PRINT ============ */
+        @media print {
+            html, body { background: #ffffff; padding: 0; margin: 0; }
+            .toolbar, .toast { display: none !important; }
+            .document { gap: 0; }
+            .page {
+                box-shadow: none;
+                margin: 0;
+                width: 210mm;
+                min-height: 297mm;
+                padding: 16mm 14mm;
+                page-break-after: always;
+                break-after: page;
+            }
+            .page:last-child { page-break-after: auto; break-after: auto; }
+            /* Form inputs print as text-only */
+            input, select, textarea {
+                color: var(--ink) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            td.rating-cell.is-selected {
+                background: var(--maize-soft) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        /* ============ RESPONSIVE (small screens just scroll horizontally) ============ */
+        @media (max-width: 860px) {
+            body { padding: 16px 8px 48px 8px; }
+            .page { transform-origin: top center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar" role="toolbar" aria-label="Document actions">
+        <a href="index.html" class="back" title="Back to Hub">&larr; Hub</a>
+        <button type="button" class="btn ghost" id="reset-btn" title="Clear all fields">Reset</button>
+        <button type="button" class="btn" id="save-pdf-btn" title="Save as PDF">Save as PDF</button>
+    </div>
+
+    <div class="document" id="document"></div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    /* ============ RUBRIC DATA (from AISA Supervision Model 25-26) ============ */
+    const RUBRIC = [
+        {
+            num: 1,
+            title: "Planning and Preparation",
+            criteria: [
+                {
+                    key: "d1-knowledge",
+                    name: "Knowledge",
+                    ratings: {
+                        4: "Demonstrates exceptional mastery of subject matter and innovative application of IB approaches to teaching and learning. Consistently integrates interdisciplinary connections and real-world applications to deepen student understanding.",
+                        3: "Demonstrates strong knowledge of subject matter and effectively applies IB approaches to teaching and learning. Makes relevant connections across disciplines and to real-world scenarios.",
+                        2: "Has adequate knowledge of the subject and some understanding of IB approaches to teaching and learning. Occasionally makes connections to other disciplines or real-world applications.",
+                        1: "Has limited familiarity with subject matter and few ideas on IB approaches to teaching and learning. Rarely makes connections beyond the immediate topic."
+                    }
+                },
+                {
+                    key: "d1-standards",
+                    name: "Standards and IB Integration",
+                    ratings: {
+                        4: "Masterfully plans units that seamlessly integrate IB curriculum frameworks with local standards, preparing students for both IB assessments and local requirements. Innovatively addresses all aspects of the IB programme, including international-mindedness and the Learner Profile.",
+                        3: "Plans units aligned with IB curriculum frameworks and local standards, effectively preparing students for assessments. Consistently incorporates key elements of the IB programme, including international-mindedness.",
+                        2: "Has done some planning around IB frameworks and local standards, with inconsistent preparation for assessments. Attempts to incorporate some elements of the IB programme, but may miss key components.",
+                        1: "Plans lessons with little consideration of IB frameworks or local standards — minimal evidence of IB programme elements in planning."
+                    }
+                },
+                {
+                    key: "d1-lesson",
+                    name: "Lesson Design",
+                    ratings: {
+                        4: "Designs highly innovative lessons with clear, challenging objectives, deeply engaging activities, and exemplary differentiation that fosters international-mindedness. Consistently incorporates student choice and inquiry-based learning.",
+                        3: "Designs lessons with clear objectives, engaging activities, and effective differentiation that support IB Learner Profile attributes. Often includes opportunities for student choice and inquiry.",
+                        2: "Plans lessons with some objectives and activities, limited differentiation for IB learners. Occasionally includes student choice or inquiry-based elements.",
+                        1: "Lessons lack clear objectives or engaging elements aligned with IB principles. Rarely includes opportunities for student choice or inquiry."
+                    }
+                },
+                {
+                    key: "d1-assess",
+                    name: "Assessment",
+                    ratings: {
+                        4: "Implements a comprehensive, balanced assessment system that includes innovative formative and summative strategies aligned with IB assessment philosophies. Consistently uses assessment data to inform instruction and provides multiple pathways for students to demonstrate learning.",
+                        3: "Plans effective formative and summative assessments to monitor student learning, aligned with IB assessment criteria. Regularly uses assessment data to adjust instruction and provides some variety in assessment methods.",
+                        2: "Drafts some assessments to measure student learning, but they lack consistent alignment with IB criteria. Occasionally uses assessment data to inform instruction, but with limited variety in assessment methods.",
+                        1: "Relies mainly on summative tests with little formative assessment or IB alignment. Rarely uses assessment data to inform instruction and offers limited assessment methods."
+                    }
+                }
+            ]
+        },
+        {
+            num: 2,
+            title: "Classroom Environment",
+            criteria: [
+                {
+                    key: "d2-exp",
+                    name: "Expectations",
+                    ratings: {
+                        4: "Creates a classroom culture that exemplifies the IB Learner Profile, where students take ownership of maintaining high standards for behavior and learning. Students actively support and encourage each other's growth and development.",
+                        3: "Clearly communicates and consistently enforces high standards for behavior, referencing school values and IB attributes. Students generally understand and follow expectations.",
+                        2: "Announces classroom rules but inconsistently enforces them, with limited connection to school values or IB attributes. Students are sometimes unclear about expectations.",
+                        1: "Has few clear expectations for student behavior or IB learner attributes. Students are often unsure of what is expected of them."
+                    }
+                },
+                {
+                    key: "d2-rel",
+                    name: "Relationships",
+                    ratings: {
+                        4: "Builds exceptional, culturally responsive relationships with all students, fostering a deeply inclusive and respectful classroom community. Actively promotes understanding and appreciation of diverse perspectives and experiences.",
+                        3: "Is fair and respectful toward students and builds positive relationships that support international-mindedness. Demonstrates awareness and respect for cultural differences.",
+                        2: "Is respectful to most students but struggles to build relationships with some, and has an inconsistent focus on international perspectives. Limited consideration of cultural differences.",
+                        1: "Is sometimes unfair or disrespectful to students, with little consideration of cultural differences. Minimal effort to build positive relationships or promote international-mindedness."
+                    }
+                },
+                {
+                    key: "d2-rout",
+                    name: "Routines",
+                    ratings: {
+                        4: "Empowers students to create, maintain, and adapt classroom routines that maximize learning time and support inquiry-based learning. Routines seamlessly integrate with IB unit structures and promote student independence.",
+                        3: "Teaches effective routines and has students maintain them throughout the year, supporting IB unit structures. Routines generally promote efficient use of class time and student responsibility.",
+                        2: "Tries to establish routines, but they are not consistently followed or supportive of IB learning approaches. Some routines may be in place, but are not always effective.",
+                        1: "Does not teach or maintain clear classroom routines. Class time is often lost to disorganization or confusion."
+                    }
+                },
+                {
+                    key: "d2-space",
+                    name: "Physical Space",
+                    ratings: {
+                        4: "Creates an inspiring learning environment that showcases student work, supports collaboration, and reflects global perspectives. The space is flexible and adaptable to various learning activities and IB unit needs.",
+                        3: "Organizes the classroom to support learning with relevant displays and materials, including some international content. The space is generally conducive to learning and collaboration.",
+                        2: "Has some organization but limited use of space to support learning or display international perspectives. The classroom layout may not always support collaborative or inquiry-based learning.",
+                        1: "The classroom is disorganized and not set up to support IB learning approaches. Little thought is given to how the physical space impacts learning or reflects IB principles."
+                    }
+                }
+            ]
+        },
+        {
+            num: 3,
+            title: "Instruction",
+            guide: "Guiding Question: How effectively am I engaging students, asking questions, differentiating, and using resources to support learning?",
+            criteria: [
+                {
+                    key: "d3-eng",
+                    name: "Engagement",
+                    adek: "ADEK 1.1, 3.1",
+                    ratings: {
+                        4: "Consistently creates highly engaging lessons. Students take ownership of their learning, connect to real-world issues, fostering IB Learner Profile attributes. Uses a range of strategies (Cold Call, Turn & Talk, Narrate the Positive) so that all students are thinking and participating.",
+                        3: "Actively engages most students using discussion, collaboration, and checks for understanding. Regularly applies IB approaches and uses strategies like Call & Response or No Opt Out to keep students on task.",
+                        2: "Attempts to engage students, but some remain passive or off-task. Strategies are limited (e.g., mostly lecture or questioning a few students). Working on incorporating routines for active participation.",
+                        1: "Lessons are mostly teacher-centered with little student engagement. A few strategies are used to involve students or check for understanding."
+                    },
+                    prompts: [
+                        "Did I circulate and check on all students during the lesson?",
+                        "How many students answered questions today — was it the same few or the whole class?",
+                        "Did I create moments of joy, energy, or challenge that kept students engaged?"
+                    ]
+                },
+                {
+                    key: "d3-q",
+                    name: "Questioning",
+                    adek: "ADEK 1.3, 3.4",
+                    ratings: {
+                        4: "Masterfully uses a wide variety of questions (e.g. Stretch It, Habits of Discussion, Roll Back) that push students to think critically, build on each other's ideas, and connect to global perspectives.",
+                        3: "Asks questions that usually spark good discussion and deeper thinking. Waits for students to respond and encourages them to explain their reasoning.",
+                        2: "Asks some open questions but discussions are limited in depth or dominated by a few voices. Wait time and follow-up are inconsistent.",
+                        1: "Questions are mostly surface-level or recall-based, with little student discussion."
+                    },
+                    prompts: [
+                        "Did my questions today push students to explain their thinking, not just give quick answers?",
+                        "How often did I ask students to build off each other's ideas?"
+                    ]
+                },
+                {
+                    key: "d3-diff",
+                    name: "Differentiation",
+                    adek: "ADEK 2.1, 3.3",
+                    ratings: {
+                        4: "Seamlessly plans for and adjusts to different learning needs using strategies like Show Call, Stamp the Understanding, Aggressively Monitor. All learners are challenged and supported.",
+                        3: "Regularly differentiates instruction by adjusting tasks or supports. Most learners are able to access the lesson successfully.",
+                        2: "Tries to accommodate some learning needs but often uses a one-size-fits-all approach. Differentiation is inconsistent.",
+                        1: "Rarely differentiates or adjusts instruction for student needs."
+                    },
+                    prompts: [
+                        "Did I notice who needed extra support or challenge throughout the lesson?",
+                        "How did I respond in the moment when a student didn't understand?"
+                    ]
+                },
+                {
+                    key: "d3-tech",
+                    name: "Use of Technology",
+                    adek: "ADEK 3.1",
+                    ratings: {
+                        4: "Integrates resources and technology in innovative ways that transform learning. Students use tools to collaborate, create, and connect globally.",
+                        3: "Uses resources and technology purposefully to enhance learning and support IB approaches.",
+                        2: "Sometimes uses resources or technology, but not always effectively or with a clear learning purpose.",
+                        1: "Rarely uses technology or resources to support instruction, or their use does not support learning."
+                    },
+                    prompts: [
+                        "Were the resources I used essential to student learning or just an add-on?",
+                        "Did technology help students collaborate, explore, or show their understanding in a deeper way?"
+                    ]
+                }
+            ]
+        },
+        {
+            num: 4,
+            title: "Assessment and Follow-Up",
+            criteria: [
+                {
+                    key: "d4-fb",
+                    name: "Feedback",
+                    ratings: {
+                        4: "Provides exemplary, timely, and specific feedback that guides improvement and fosters student self-assessment skills aligned with IB assessment practices. Feedback is individualized and promotes student reflection and goal-setting.",
+                        3: "Gives students timely, specific feedback to guide improvement, referencing IB assessment criteria. Feedback is regular and helps students understand their progress.",
+                        2: "Provides some feedback, but it is not always timely or specific, with limited connection to IB criteria. Feedback may be general or infrequent.",
+                        1: "Gives little meaningful feedback to students. Feedback, when given, is vague or unhelpful for student improvement."
+                    }
+                },
+                {
+                    key: "d4-ref",
+                    name: "Reflection",
+                    ratings: {
+                        4: "Engages in deep, ongoing reflection on teaching practices, using data innovatively to improve instruction and support IB program development. Actively seeks out and incorporates student feedback in reflections.",
+                        3: "Regularly reflects on lessons and uses data to improve instruction, considering IB unit evaluations. Reflection leads to meaningful adjustments in teaching practices.",
+                        2: "Sometimes reflects on teaching but doesn't consistently use data or IB unit reflections. Reflections may be superficial or not lead to significant changes.",
+                        1: "Rarely reflects on lessons or uses data to improve. Little evidence of using reflection to inform teaching practices."
+                    }
+                },
+                {
+                    key: "d4-re",
+                    name: "Reteaching",
+                    ratings: {
+                        4: "Implements sophisticated, data-driven strategies to adjust teaching and provide targeted support to struggling students, aligned with IB learning objectives. Proactively identifies and addresses individual student needs.",
+                        3: "Uses assessment data to adjust teaching and provide support to struggling students, considering IB approaches to learning. Regularly checks for understanding and reteaches as necessary.",
+                        2: "Sometimes reteaches but doesn't consistently follow up with struggling students or align with IB objectives. Reteaching may be reactive rather than proactive.",
+                        1: "Moves on without analyzing assessments or reteaching. Little effort was made to address gaps in student understanding."
+                    }
+                }
+            ]
+        },
+        {
+            num: 5,
+            title: "Professionalism",
+            criteria: [
+                {
+                    key: "d5-col",
+                    name: "Collaboration",
+                    ratings: {
+                        4: "Takes a leadership role in fostering a culture of collaboration, actively sharing best practices and innovating IB unit planning. Initiates and leads collaborative projects that enhance the IB program.",
+                        3: "Actively collaborates with colleagues to plan and improve instruction, participating effectively in IB collaborative planning. Regularly contributes ideas and resources to team efforts.",
+                        2: "Participates in some collaboration but could be more engaged in IB program development. Contributions to collaborative efforts are inconsistent.",
+                        1: "Rarely collaborates or shares ideas with colleagues. May resist or avoid collaborative planning opportunities."
+                    }
+                },
+                {
+                    key: "d5-com",
+                    name: "Communication",
+                    ratings: {
+                        4: "Establishes highly effective partnerships with families, providing clear, regular communication about student progress and innovative ways to support IB learning at home. Creates multiple channels for two-way communication with families.",
+                        3: "Communicates clearly and regularly with families about student progress and ways to support IB learning. Maintains open lines of communication and responds promptly to family inquiries.",
+                        2: "Has some communication with families, but it is inconsistent or lacks information about IB program. Communication may be infrequent or one-directional.",
+                        1: "Rarely communicates with families. When communication occurs, it may be unclear or focused only on problems."
+                    }
+                },
+                {
+                    key: "d5-grow",
+                    name: "Professional Growth",
+                    ratings: {
+                        4: "Continuously seeks out and implements cutting-edge professional learning opportunities, contributing significantly to school and IB program improvement. Shares learning with colleagues and takes on mentoring roles.",
+                        3: "Seeks out professional learning opportunities and implements new strategies, actively engaging in IB professional development. Regularly applies new learning to classroom practice.",
+                        2: "Participates in required PD but doesn't consistently implement new learning or engage fully with IB workshops. Application of professional learning to practice is limited.",
+                        1: "Resists professional growth opportunities. Shows little interest in improving practice or staying current with IB developments."
+                    }
+                },
+                {
+                    key: "d5-hs",
+                    name: "Health and Safety",
+                    ratings: {
+                        4: "Consistently demonstrates comprehensive knowledge of all health and safety policies and procedures and applies them with precision. Anticipates potential risks before they arise and implements preventive measures without prompting. Communicates safety concerns immediately and with clarity.",
+                        3: "Demonstrates strong knowledge of health and safety policies and procedures and applies them consistently. Identifies and addresses potential risks in a timely manner. Communicates safety concerns clearly to relevant personnel.",
+                        2: "Demonstrates general understanding of health and safety policies and procedures but may require occasional reminders. Identifies obvious risks but may overlook less visible concerns. Communicates safety issues when prompted.",
+                        1: "Demonstrates limited or insufficient understanding of health and safety policies and procedures. Fails to identify or address safety risks. Does not communicate safety concerns appropriately."
+                    }
+                }
+            ]
+        }
+    ];
+
+    /* ============ HELPERS ============ */
+    function esc(str) {
+        const d = document.createElement('div');
+        d.textContent = str == null ? '' : String(str);
+        return d.innerHTML;
+    }
+
+    function todayISO() {
+        return new Date().toISOString().slice(0, 10);
+    }
+
+    function sanitizeForFilename(s) {
+        return (s || '').trim().replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, ' ').trim();
+    }
+
+    function pageFooter(num, total) {
+        return `<div class="page-footer">
+            <span>AISA Supervision &amp; Evaluation Program &mdash; 2025-26</span>
+            <span>Page ${num} of ${total}</span>
+        </div>`;
+    }
+
+    /* ============ PAGE 1: Cover + Fillable Meta + Intro ============ */
+    function renderCoverPage(num, total) {
+        return `<section class="page" data-page="cover">
+            <div class="cover-header">
+                <div class="eyebrow">American International School in Abu Dhabi</div>
+                <h1>Teacher Evaluation</h1>
+                <div class="muted" style="font-size: 10.5pt;">The AISA Supervision &amp; Evaluation Program &mdash; 2025-26</div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-grid">
+                    <div>
+                        <label class="field-label" for="teacher-name">Teacher Name</label>
+                        <input class="field-input" type="text" id="teacher-name" autocomplete="off">
+                    </div>
+                    <div>
+                        <label class="field-label" for="evaluator-name">Evaluator Name</label>
+                        <input class="field-input" type="text" id="evaluator-name" autocomplete="off">
+                    </div>
+                    <div>
+                        <label class="field-label" for="eval-date">Date</label>
+                        <input class="field-input" type="date" id="eval-date" value="${todayISO()}">
+                    </div>
+                </div>
+                <div class="info-grid two">
+                    <div>
+                        <label class="field-label" for="grade-level">Grade Level / Subject</label>
+                        <input class="field-input" type="text" id="grade-level" autocomplete="off">
+                    </div>
+                    <div>
+                        <label class="field-label" for="eval-type">Evaluation Type</label>
+                        <select class="field-select" id="eval-type">
+                            <option value="Mini-Observation">Mini-Observation</option>
+                            <option value="Formal Observation">Formal Observation</option>
+                            <option value="Mid-Year Review">Mid-Year Review</option>
+                            <option value="End-of-Year Evaluation">End-of-Year Evaluation</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <h2>About the Program</h2>
+            <div class="hairline"></div>
+            <p>The AISA supervision methodology is a comprehensive approach to teacher evaluation and professional development. It provides a structured framework for assessing teacher performance across multiple domains and offering targeted feedback for improvement.</p>
+
+            <h3 style="margin-top: 5mm;">Evaluation Structure</h3>
+            <p>The methodology is organized around five domains that encompass all aspects of a teacher's professional responsibilities:</p>
+            <ol class="clean">
+                <li>Planning and Preparation for Learning</li>
+                <li>Classroom Environment</li>
+                <li>Instruction</li>
+                <li>Assessment and Follow-Up</li>
+                <li>Professionalism</li>
+            </ol>
+
+            ${pageFooter(num, total)}
+        </section>`;
+    }
+
+    /* ============ PAGE 2: Rating Scale + Process + Principles + Follow-Up ============ */
+    function renderOverviewPage(num, total) {
+        return `<section class="page" data-page="overview">
+            <h2>Rating Scale</h2>
+            <div class="hairline"></div>
+            <p>Each domain is evaluated using a four-level rating scale:</p>
+            <table class="scale" aria-label="Rating Scale">
+                <thead>
+                    <tr><th style="width: 18mm;">Rating</th><th style="width: 42mm;">Label</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td class="level">4</td><td class="label">Exemplary</td><td>Outstanding performance meeting demanding criteria.</td></tr>
+                    <tr><td class="level">3</td><td class="label">Effective</td><td>Solid, expected professional performance.</td></tr>
+                    <tr><td class="level">2</td><td class="label">Developing</td><td>Performance with real deficiencies requiring attention.</td></tr>
+                    <tr><td class="level">1</td><td class="label">Does Not Meet Standards</td><td>Unacceptable performance.</td></tr>
+                </tbody>
+            </table>
+
+            <h2 style="margin-top: 8mm;">Evaluation Process</h2>
+            <div class="hairline"></div>
+            <ol class="clean">
+                <li><strong>Ongoing Observation.</strong> Supervisors conduct frequent, unannounced mini-observations (every 2&ndash;3 weeks) throughout the year.</li>
+                <li><strong>Feedback Conversations.</strong> Each observation is followed by a face-to-face conversation to provide immediate feedback and address concerns.</li>
+                <li><strong>Self-Assessment.</strong> Both supervisor and teacher independently complete the rubrics before the evaluation conference.</li>
+                <li><strong>Evaluation Conference.</strong> The supervisor and teacher meet to compare scores, discuss each criterion, and aim for consensus based on evidence.</li>
+                <li><strong>Final Assessment.</strong> The supervisor makes the final decision on ratings, providing a comprehensive end-of-year assessment.</li>
+            </ol>
+
+            <h2 style="margin-top: 6mm;">Key Principles</h2>
+            <div class="hairline"></div>
+            <ul class="clean">
+                <li><strong>Comprehensive Assessment</strong> &mdash; based on multiple mini-observations, not a single visit.</li>
+                <li><strong>Evidence-Based Feedback</strong> &mdash; ratings grounded in specific, observable evidence.</li>
+                <li><strong>Open Dialogue</strong> &mdash; supervisors and teachers approach the process with openness and humility.</li>
+                <li><strong>Continuous Improvement</strong> &mdash; detailed guidance for growth, regardless of current performance level.</li>
+                <li><strong>Honest Communication</strong> &mdash; candid, constructive feedback, even when challenging.</li>
+            </ul>
+
+            <div class="callout" style="margin-top: 6mm;">
+                <h3>Follow-Up Support</h3>
+                <p style="margin-bottom: 3px;">After the evaluation, supervisors provide robust follow-up support, particularly for teachers who need improvement. This may include targeted PD, mentoring or coaching, regular check-ins to monitor progress, and additional resources as needed.</p>
+            </div>
+
+            ${pageFooter(num, total)}
+        </section>`;
+    }
+
+    /* ============ RUBRIC TABLE RENDERER ============ */
+    // Produces the rubric table HTML for a set of criteria. Each criterion
+    // becomes a table row; if prompts are present an additional row is
+    // inserted beneath it. Rating cells are clickable (radio input inside).
+    function renderRubricTable(criteria) {
+        let html = `<table class="rubric" role="grid">
+            <colgroup>
+                <col class="col-crit">
+                <col class="col-rate">
+                <col class="col-rate">
+                <col class="col-rate">
+                <col class="col-rate">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th class="criteria-col">Criteria</th>
+                    <th><span class="lvl-num">4</span>Exemplary</th>
+                    <th><span class="lvl-num">3</span>Effective (Target)</th>
+                    <th><span class="lvl-num">2</span>Developing</th>
+                    <th><span class="lvl-num">1</span>Does Not Meet Standards</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+        criteria.forEach(c => {
+            html += `<tr>
+                <td class="criterion">
+                    ${esc(c.name)}
+                    ${c.adek ? `<div class="adek">(${esc(c.adek)})</div>` : ''}
+                </td>`;
+
+            [4, 3, 2, 1].forEach(lvl => {
+                const desc = (c.ratings && c.ratings[lvl]) || '';
+                html += `<td class="rating-cell" data-group="${esc(c.key)}" data-level="${lvl}">
+                    <input type="radio" name="${esc(c.key)}" value="${lvl}" tabindex="-1">
+                    <span class="check-mark">&#10003;</span>
+                    ${esc(desc)}
+                </td>`;
+            });
+
+            html += `</tr>`;
+
+            if (c.prompts && c.prompts.length) {
+                html += `<tr class="prompt-row">
+                    <td colspan="5">
+                        <strong>Reflective Prompts</strong>
+                        <ul>
+                            ${c.prompts.map(p => `<li>${esc(p)}</li>`).join('')}
+                        </ul>
+                    </td>
+                </tr>`;
+            }
+        });
+
+        html += `</tbody></table>`;
+        return html;
+    }
+
+    /* ============ DOMAIN PAGE RENDERER ============ */
+    // Renders a single A4 page for a domain. Includes: domain header,
+    // optional guiding question, rubric table, and an "Evidence & Comments"
+    // block with a textarea tied to this domain.
+    function renderDomainPage(domain, num, total) {
+        const guideHtml = domain.guide ? `<div class="domain-guide">${esc(domain.guide)}</div>` : '';
+        return `<section class="page" data-page="domain-${domain.num}">
+            <div class="domain-header">
+                <span class="num">${domain.num}</span>
+                <h2>Domain ${domain.num}: ${esc(domain.title)}</h2>
+            </div>
+            ${guideHtml}
+            ${renderRubricTable(domain.criteria)}
+            <div class="comment-block">
+                <label class="field-label" for="comments-d${domain.num}">Evidence &amp; Comments for Domain ${domain.num}</label>
+                <textarea class="field-textarea" id="comments-d${domain.num}" data-comment="d${domain.num}" placeholder="Observed evidence, strengths, and next steps..."></textarea>
+            </div>
+            ${pageFooter(num, total)}
+        </section>`;
+    }
+
+    /* ============ FINAL PAGE: Overall Summary + Signatures ============ */
+    function renderSummaryPage(num, total) {
+        return `<section class="page" data-page="summary">
+            <h2>Overall Summary</h2>
+            <div class="hairline"></div>
+
+            <div style="margin-bottom: 6mm;">
+                <label class="field-label" for="overall-rating">Overall Rating</label>
+                <select class="field-select" id="overall-rating" style="border-bottom: 1px solid var(--line); padding: 4px 2px;">
+                    <option value="">Select an overall rating...</option>
+                    <option value="4 - Exemplary">4 &mdash; Exemplary</option>
+                    <option value="3 - Effective">3 &mdash; Effective</option>
+                    <option value="2 - Developing">2 &mdash; Developing</option>
+                    <option value="1 - Does Not Meet Standards">1 &mdash; Does Not Meet Standards</option>
+                </select>
+            </div>
+
+            <div class="comment-block" style="margin-bottom: 5mm;">
+                <label class="field-label" for="strengths">Key Strengths</label>
+                <textarea class="field-textarea" id="strengths" style="min-height: 28mm;" placeholder="Overall strengths observed across the five domains..."></textarea>
+            </div>
+
+            <div class="comment-block" style="margin-bottom: 5mm;">
+                <label class="field-label" for="growth-areas">Areas for Growth</label>
+                <textarea class="field-textarea" id="growth-areas" style="min-height: 28mm;" placeholder="Priority growth areas and next steps..."></textarea>
+            </div>
+
+            <div class="comment-block" style="margin-bottom: 5mm;">
+                <label class="field-label" for="followup">Follow-Up / Support Plan</label>
+                <textarea class="field-textarea" id="followup" style="min-height: 28mm;" placeholder="Targeted PD, mentoring, check-ins, additional resources..."></textarea>
+            </div>
+
+            <div class="sig-grid">
+                <div>
+                    <div class="sig-line"></div>
+                    <div class="sig-caption">Teacher Signature &amp; Date</div>
+                </div>
+                <div>
+                    <div class="sig-line"></div>
+                    <div class="sig-caption">Evaluator Signature &amp; Date</div>
+                </div>
+            </div>
+
+            ${pageFooter(num, total)}
+        </section>`;
+    }
+
+    /* ============ BOOT: assemble all pages into the document ============ */
+    function buildDocument() {
+        // Fixed pages: cover, overview, one page per domain, summary
+        const totalPages = 2 + RUBRIC.length + 1;
+        let idx = 1;
+        let html = '';
+        html += renderCoverPage(idx++, totalPages);
+        html += renderOverviewPage(idx++, totalPages);
+        RUBRIC.forEach(domain => {
+            html += renderDomainPage(domain, idx++, totalPages);
+        });
+        html += renderSummaryPage(idx++, totalPages);
+
+        document.getElementById('document').innerHTML = html;
+    }
+
+    /* ============ TOAST ============ */
+    let toastTimer;
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    /* ============ RATING CELL INTERACTION ============ */
+    // Clicking anywhere in a rating cell selects that rating and highlights
+    // the cell. Works across all domains because we delegate from document.
+    function wireRatingCells() {
+        document.getElementById('document').addEventListener('click', (e) => {
+            const cell = e.target.closest('td.rating-cell');
+            if (!cell) return;
+            // Prevent the inner radio/label handling from double-firing
+            e.preventDefault();
+
+            const group = cell.dataset.group;
+            // Clear other cells in the same group
+            document.querySelectorAll(`td.rating-cell[data-group="${group}"]`).forEach(c => {
+                c.classList.remove('is-selected');
+                const input = c.querySelector('input[type="radio"]');
+                if (input) input.checked = false;
+            });
+            // Mark this one
+            cell.classList.add('is-selected');
+            const input = cell.querySelector('input[type="radio"]');
+            if (input) input.checked = true;
+        });
+    }
+
+    /* ============ RESET ============ */
+    function resetForm() {
+        if (!confirm('Clear all fields? This cannot be undone.')) return;
+        document.querySelectorAll('#document input[type="text"], #document input[type="date"], #document textarea')
+            .forEach(el => { if (el.id === 'eval-date') el.value = todayISO(); else el.value = ''; });
+        document.querySelectorAll('#document select').forEach(el => { el.selectedIndex = 0; });
+        document.querySelectorAll('td.rating-cell.is-selected').forEach(c => c.classList.remove('is-selected'));
+        document.querySelectorAll('#document input[type="radio"]').forEach(el => { el.checked = false; });
+        showToast('Form cleared.');
+    }
+
+    /* ============ PDF EXPORT ============ */
+    // Renders each .page (already sized exactly 210x297mm) to its own A4
+    // PDF page at 1:1 scale. The html2pdf bundle wraps jsPDF + html2canvas.
+    function buildFilename() {
+        const dateRaw = (document.getElementById('eval-date') || {}).value || '';
+        const datePart = /^\d{4}-\d{2}-\d{2}$/.test(dateRaw) ? dateRaw : todayISO();
+        const teacher = sanitizeForFilename(document.getElementById('teacher-name').value) || 'Teacher';
+        const evaluator = sanitizeForFilename(document.getElementById('evaluator-name').value) || 'Evaluator';
+        return `${datePart}-${teacher}-${evaluator}.pdf`;
+    }
+
+    async function saveAsPDF() {
+        const teacher = document.getElementById('teacher-name').value.trim();
+        const evaluator = document.getElementById('evaluator-name').value.trim();
+        if (!teacher || !evaluator) {
+            showToast('Please enter Teacher and Evaluator names first.');
+            return;
+        }
+
+        const filename = buildFilename();
+        const pages = Array.from(document.querySelectorAll('.page'));
+        if (!pages.length) { showToast('Nothing to export.'); return; }
+
+        // Stash focus and blur so no caret shows up in captures
+        if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+
+        showToast('Generating PDF...');
+
+        // Build a single jsPDF document, adding each .page as its own A4 page.
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+        const pageWmm = 210;
+        const pageHmm = 297;
+
+        for (let i = 0; i < pages.length; i++) {
+            const canvas = await window.html2canvas(pages[i], {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                windowWidth: pages[i].offsetWidth,
+                windowHeight: pages[i].offsetHeight
+            });
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            if (i > 0) pdf.addPage('a4', 'portrait');
+            pdf.addImage(imgData, 'JPEG', 0, 0, pageWmm, pageHmm, undefined, 'FAST');
+        }
+
+        pdf.save(filename);
+        showToast(`Saved: ${filename}`);
+    }
+
+    /* ============ INIT ============ */
+    document.addEventListener('DOMContentLoaded', () => {
+        buildDocument();
+        wireRatingCells();
+        document.getElementById('save-pdf-btn').addEventListener('click', saveAsPDF);
+        document.getElementById('reset-btn').addEventListener('click', resetForm);
+    });
+    </script>
+
+</body>
+</html>
