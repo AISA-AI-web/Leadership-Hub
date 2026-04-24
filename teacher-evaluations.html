@@ -1161,10 +1161,14 @@
             // Preferred path: native share sheet with file attachment
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
+                    // Use the formatted filename for both the attachment name
+                    // (file.name) and the share sheet's title/text so Mail,
+                    // Messages, cloud services, etc. surface the same name.
+                    const stem = result.filename.replace(/\.pdf$/i, '');
                     await navigator.share({
                         files: [file],
-                        title: 'AISA Teacher Evaluation',
-                        text: result.filename
+                        title: stem,
+                        text: stem
                     });
                     showToast('Shared.');
                     return;
