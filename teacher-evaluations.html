@@ -9,7 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
         /* ============ BASE ============ */
@@ -1067,43 +1068,62 @@
     }
 
     async function saveAsPDF() {
-        const teacher = document.getElementById('teacher-name').value.trim();
-        const evaluator = document.getElementById('evaluator-name').value.trim();
-        if (!teacher || !evaluator) {
-            showToast('Please enter Teacher and Evaluator names first.');
-            return;
+        const btn = document.getElementById('save-pdf-btn');
+        try {
+            const teacher = document.getElementById('teacher-name').value.trim();
+            const evaluator = document.getElementById('evaluator-name').value.trim();
+            if (!teacher || !evaluator) {
+                showToast('Please enter Teacher and Evaluator names first.');
+                return;
+            }
+
+            if (typeof window.html2canvas !== 'function') {
+                showToast('PDF library (html2canvas) failed to load. Check your connection and try again.');
+                console.error('window.html2canvas is not a function');
+                return;
+            }
+            if (!window.jspdf || typeof window.jspdf.jsPDF !== 'function') {
+                showToast('PDF library (jsPDF) failed to load. Check your connection and try again.');
+                console.error('window.jspdf.jsPDF is not available');
+                return;
+            }
+
+            const filename = buildFilename();
+            const pages = Array.from(document.querySelectorAll('.page'));
+            if (!pages.length) { showToast('Nothing to export.'); return; }
+
+            if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+
+            if (btn) { btn.disabled = true; btn.textContent = 'Generating...'; }
+            showToast('Generating PDF...');
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+            const pageWmm = 210;
+            const pageHmm = 297;
+
+            for (let i = 0; i < pages.length; i++) {
+                const canvas = await window.html2canvas(pages[i], {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    windowWidth: pages[i].offsetWidth,
+                    windowHeight: pages[i].offsetHeight
+                });
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                if (i > 0) pdf.addPage('a4', 'portrait');
+                pdf.addImage(imgData, 'JPEG', 0, 0, pageWmm, pageHmm, undefined, 'FAST');
+            }
+
+            pdf.save(filename);
+            showToast(`Saved: ${filename}`);
+        } catch (err) {
+            console.error('PDF export error:', err);
+            showToast('PDF export failed: ' + (err && err.message ? err.message : 'unknown error'));
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = 'Save as PDF'; }
         }
-
-        const filename = buildFilename();
-        const pages = Array.from(document.querySelectorAll('.page'));
-        if (!pages.length) { showToast('Nothing to export.'); return; }
-
-        // Stash focus and blur so no caret shows up in captures
-        if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-
-        showToast('Generating PDF...');
-
-        // Build a single jsPDF document, adding each .page as its own A4 page.
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-        const pageWmm = 210;
-        const pageHmm = 297;
-
-        for (let i = 0; i < pages.length; i++) {
-            const canvas = await window.html2canvas(pages[i], {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#ffffff',
-                windowWidth: pages[i].offsetWidth,
-                windowHeight: pages[i].offsetHeight
-            });
-            const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            if (i > 0) pdf.addPage('a4', 'portrait');
-            pdf.addImage(imgData, 'JPEG', 0, 0, pageWmm, pageHmm, undefined, 'FAST');
-        }
-
-        pdf.save(filename);
-        showToast(`Saved: ${filename}`);
     }
 
     /* ============ INIT ============ */
