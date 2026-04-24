@@ -477,6 +477,14 @@
             padding: 0 !important;
             animation: none !important;
             min-height: auto !important;
+            display: block !important;
+            overflow: visible !important;
+        }
+        .pdf-mode .page-container {
+            max-width: 760px !important;
+            width: 760px !important;
+            padding: 0 !important;
+            margin: 0 auto !important;
         }
         .pdf-mode .logo-left,
         .pdf-mode .logo-right,
@@ -484,13 +492,15 @@
         .pdf-mode .actions,
         .pdf-mode .comment-dropdown-wrap { display: none !important; }
 
+        .pdf-mode .page-header { margin-bottom: 12px !important; }
         .pdf-mode .page-title {
             -webkit-text-fill-color: #002147 !important;
             background: none !important;
             color: #002147 !important;
+            font-size: 1.9rem !important;
         }
-        .pdf-mode .school-name { color: #002147 !important; }
-        .pdf-mode .page-subtitle { color: #374151 !important; }
+        .pdf-mode .school-name { color: #002147 !important; font-size: 0.75rem !important; }
+        .pdf-mode .page-subtitle { color: #374151 !important; font-size: 0.85rem !important; }
         .pdf-mode .info-card,
         .pdf-mode .domain {
             background: #ffffff !important;
@@ -498,49 +508,97 @@
             color: #111827 !important;
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
-            page-break-inside: avoid;
-            break-inside: avoid;
+            padding: 14px !important;
+            margin-bottom: 12px !important;
+            border-radius: 8px !important;
         }
-        .pdf-mode .domain-header { border-bottom-color: #e5e7eb !important; }
-        .pdf-mode .domain-title { color: #002147 !important; }
-        .pdf-mode .domain-guide { color: #374151 !important; }
+        .pdf-mode .domain-header {
+            border-bottom-color: #e5e7eb !important;
+            padding-bottom: 8px !important;
+            margin-bottom: 4px !important;
+        }
+        .pdf-mode .domain-title { color: #002147 !important; font-size: 1.1rem !important; }
+        .pdf-mode .domain-guide { color: #374151 !important; font-size: 0.78rem !important; }
         .pdf-mode .domain-number {
             background: #FFC72C !important;
             color: #002147 !important;
             border-color: #e0b020 !important;
+            width: 34px !important;
+            height: 34px !important;
+            font-size: 0.95rem !important;
         }
-        .pdf-mode .field label { color: #002147 !important; }
+        .pdf-mode .field label { color: #002147 !important; font-size: 0.7rem !important; }
         .pdf-mode .field input,
         .pdf-mode .field textarea,
         .pdf-mode .field select {
             background: #ffffff !important;
             border: 1px solid #d1d5db !important;
             color: #111827 !important;
+            font-size: 0.82rem !important;
+            padding: 6px 8px !important;
         }
-        .pdf-mode .criterion-name { color: #002147 !important; }
-        .pdf-mode .criterion-tag { background: #f3f4f6 !important; color: #374151 !important; border-color: #e5e7eb !important; }
-        .pdf-mode .rating-option label {
-            background: #f9fafb !important;
-            color: #374151 !important;
-            border-color: #e5e7eb !important;
+        .pdf-mode .field textarea { min-height: 40px !important; }
+
+        .pdf-mode .criterion {
+            padding: 10px 0 !important;
+            page-break-inside: avoid;
+            break-inside: avoid;
         }
-        .pdf-mode .rating-option input[type="radio"]:checked + label {
+        .pdf-mode .criterion-head { margin-bottom: 6px !important; }
+        .pdf-mode .criterion-name { color: #002147 !important; font-size: 0.95rem !important; }
+        .pdf-mode .criterion-tag { background: #f3f4f6 !important; color: #374151 !important; border-color: #e5e7eb !important; font-size: 0.65rem !important; }
+
+        /* Rating row: keep only the selected rating in the PDF to save space */
+        .pdf-mode .rating-row {
+            display: block !important;
+            margin-bottom: 6px !important;
+        }
+        .pdf-mode .rating-option { display: none !important; }
+        .pdf-mode .rating-option.is-selected { display: block !important; }
+        .pdf-mode .rating-option.is-selected label {
             background: #fff7db !important;
-            border-color: #FFC72C !important;
-            box-shadow: 0 0 0 2px #FFC72C !important;
+            border: 1px solid #FFC72C !important;
             color: #111827 !important;
+            padding: 8px 10px !important;
+            box-shadow: none !important;
+            border-radius: 6px !important;
+            font-size: 0.8rem !important;
         }
-        .pdf-mode .rating-desc { color: #4b5563 !important; }
+        .pdf-mode .rating-option .rating-badge { font-size: 0.75rem !important; margin-bottom: 3px !important; }
+        .pdf-mode .rating-option .rating-desc { font-size: 0.75rem !important; color: #4b5563 !important; line-height: 1.35 !important; }
+
+        /* Unrated criterion: show a compact placeholder */
+        .pdf-mode .rating-row.no-rating::before {
+            content: "Not rated";
+            display: inline-block;
+            padding: 4px 10px;
+            background: #f3f4f6;
+            border: 1px dashed #d1d5db;
+            border-radius: 6px;
+            color: #6b7280;
+            font-size: 0.75rem;
+        }
+
         .pdf-mode .reflective-prompts {
             background: #f9fafb !important;
             color: #374151 !important;
             border-left-color: #FFC72C !important;
+            padding: 6px 10px !important;
+            font-size: 0.72rem !important;
         }
-        .pdf-mode .criterion {
-            page-break-inside: avoid;
-            break-inside: avoid;
+        .pdf-mode .reflective-prompts strong { font-size: 0.65rem !important; margin-bottom: 2px !important; }
+        .pdf-mode .reflective-prompts li { font-size: 0.72rem !important; line-height: 1.3 !important; }
+
+        .pdf-mode .comment-block {
+            grid-template-columns: 1fr !important;
+            margin-top: 6px !important;
+            gap: 4px !important;
         }
-        .pdf-mode .comment-block { grid-template-columns: 1fr !important; }
+        .pdf-mode .info-grid,
+        .pdf-mode .info-grid.two-col {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px !important;
+        }
 
         /* Responsive */
         @media screen and (max-width: 900px) {
@@ -1336,6 +1394,23 @@
             return `${datePart}-${teacher}-${evaluator}.pdf`;
         }
 
+        /* ---------- Tag selected ratings for PDF render ---------- */
+        function tagSelectedRatings() {
+            // Remove existing flags
+            document.querySelectorAll('.rating-option.is-selected').forEach(el => el.classList.remove('is-selected'));
+            document.querySelectorAll('.rating-row.no-rating').forEach(el => el.classList.remove('no-rating'));
+
+            document.querySelectorAll('.rating-row').forEach(row => {
+                const checked = row.querySelector('input[type="radio"]:checked');
+                if (checked) {
+                    const option = checked.closest('.rating-option');
+                    if (option) option.classList.add('is-selected');
+                } else {
+                    row.classList.add('no-rating');
+                }
+            });
+        }
+
         /* ---------- PDF export ---------- */
         function saveAsPDF() {
             const teacher = document.getElementById('teacher-name').value.trim();
@@ -1348,25 +1423,37 @@
             const filename = buildFilename();
             const root = document.getElementById('evaluation-root');
 
-            // Switch to print styling on the body (so backgrounds/gradient become white)
+            tagSelectedRatings();
             document.body.classList.add('pdf-mode');
+            // Force layout flush so html2canvas captures pdf-mode styles
+            void document.body.offsetHeight;
 
             const opts = {
-                margin:       [10, 10, 12, 10],
+                margin:       [12, 12, 15, 12],
                 filename:     filename,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+                image:        { type: 'jpeg', quality: 0.95 },
+                html2canvas:  {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    windowWidth: 800,
+                    scrollY: 0,
+                    scrollX: 0
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+                pagebreak:    { mode: ['css', 'legacy'] }
             };
 
-            html2pdf().set(opts).from(root).save().then(() => {
-                document.body.classList.remove('pdf-mode');
-                showToast(`Saved: ${filename}`, 'success');
-            }).catch((err) => {
-                document.body.classList.remove('pdf-mode');
-                console.error(err);
-                showToast('PDF export failed. See console for details.', 'info');
+            // Give the browser a frame to apply styles, then export
+            requestAnimationFrame(() => {
+                html2pdf().set(opts).from(root).save().then(() => {
+                    document.body.classList.remove('pdf-mode');
+                    showToast(`Saved: ${filename}`, 'success');
+                }).catch((err) => {
+                    document.body.classList.remove('pdf-mode');
+                    console.error(err);
+                    showToast('PDF export failed. See console for details.', 'info');
+                });
             });
         }
 
