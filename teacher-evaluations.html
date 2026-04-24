@@ -1161,14 +1161,16 @@
             // Preferred path: native share sheet with file attachment
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
-                    // Use the formatted filename for both the attachment name
-                    // (file.name) and the share sheet's title/text so Mail,
-                    // Messages, cloud services, etc. surface the same name.
-                    const stem = result.filename.replace(/\.pdf$/i, '');
+                    // The attached file keeps the full YYYY-MM-DD-Teacher-
+                    // Evaluator.pdf name. The share sheet's title becomes
+                    // the email subject when sharing to Mail, so use a
+                    // reader-friendly "<Teacher> - Evaluation Form" there.
+                    const teacherName = document.getElementById('teacher-name').value.trim();
+                    const subject = `${teacherName} - Evaluation Form`;
                     await navigator.share({
                         files: [file],
-                        title: stem,
-                        text: stem
+                        title: subject,
+                        text: subject
                     });
                     showToast('Shared.');
                     return;
